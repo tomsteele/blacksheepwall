@@ -51,6 +51,12 @@ if (program.ssl) {
   });
 }
 
+if (program.bing) {
+  bsw.bing(ips, concurrency, function(results) {
+    console.log(results);
+  });
+}
+
 //
 // generic function to print and exit
 //
