@@ -1,0 +1,9 @@
+{
+  "name": "BSW",
+  "description": "discovery hosts and vhosts",
+  "version": "0.0.1",
+  "dependencies": {
+    "async": "~0.1.22",
+    "commander": "~1.1.1"
+  }
+}
