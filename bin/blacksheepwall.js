@@ -12,14 +12,21 @@ program
   .usage('[options] <ip file>')
   .option('-d, --dictionary <file>', 'hostname guessing using a one host per line dictionary')
   .option('-r, --reverse', 'reverse name lookup')
+  .option('-s, --ssl', 'grab names from ssl certificates')
   .option('-c, --concurrency <int>', 'limit amount of asyncrounous requests')
   .option('-b, --bing', 'lookup hostnames on bing')
   .option('-o, --robtext', 'lookup hostnames on robtext')
   .option('-t, --target <domain>', 'domain to use')
   .parse(process.argv);
 
+if (!programs.args[0] && !program.dictionary) { 
+  croak('no ip file provided');
+}
+
 var concurrency = program.concurrency ? program.concurrency : -1;
 var resultsDb = {};
+var ips = fs.readFileSync(program.args[0]).toString().split("\n");
+ips.pop();
 
 if (program.dictionary) {
   if (!program.target) {
@@ -32,10 +39,14 @@ if (program.dictionary) {
 }
 
 if (program.reverse) {
-  var ips = fs.readFileSync(program.args[0]).toString().split("\n");
-  ips.pop();
   bsw.reverse(ips, concurrency, function(results) {
-    console.log(results)
+    console.log(results);
+  });
+}
+
+if (program.ssl) {
+  bsw.cert(ips, concurrency, function(results) {
+    console.log(results);
   });
 }
 
