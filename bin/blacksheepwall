@@ -19,11 +19,12 @@ program
   .option('-t, --target <domain>', 'domain to use')
   .parse(process.argv);
 
-if (!programs.args[0] && !program.dictionary) { 
+if (!program.args[0] && !program.dictionary) { 
   croak('no ip file provided');
 }
 
-var concurrency = program.concurrency ? program.concurrency : -1;
+// concurrency gets set to 1000, that's healthy, but you could probably increase the amount
+var concurrency = program.concurrency ? program.concurrency : 1000;
 var resultsDb = {};
 var ips = fs.readFileSync(program.args[0]).toString().split("\n");
 ips.pop();
