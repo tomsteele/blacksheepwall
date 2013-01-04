@@ -17,6 +17,7 @@ program
   .option('-b, --bing', 'search bing for vhosts')
   .option('-o, --robtex', 'grab name records from robtex')
   .option('-t, --target <domain>', 'domain to use')
+  .option('-f, --fcrdns', 'Perform Forward Confirmed rDNS and return compliant names')
   .parse(process.argv);
 
 if (!program.args[0] && !program.dictionary) { 
@@ -35,32 +36,43 @@ if (program.dictionary) {
   }
   var items = fs.readFileSync(program.dictionary).toString().split("\n");
   bsw.dictionary(program.target, items, concurrency, function(results) {
-    console.log(results);
+    log(results);
   });
 }
 
 if (program.reverse) {
   bsw.reverse(ips, concurrency, function(results) {
-    console.log(results);
+    log(results);
   });
 }
 
 if (program.ssl) {
   bsw.cert(ips, concurrency, function(results) {
-    console.log(results);
+    log(results);
   });
 }
 
 if (program.bing) {
   bsw.bing(ips, concurrency, function(results) {
-    console.log(results);
+    log(results);
   });
 }
 
 if (program.robtex) {
   bsw.robtex(ips, concurrency, function(results) {
-    console.log(results);
+    log(results);
   });
+}
+
+function log(results) {
+  if (program.fcrdns) {
+    bsw.fcrdns(ips, results, concurrency, function(fcrdnsResults) {
+      console.log(fcrdnsResults);
+    });
+  }
+  else {
+    console.log(results);
+  }
 }
 
 //
