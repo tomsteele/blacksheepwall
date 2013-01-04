@@ -14,8 +14,8 @@ program
   .option('-r, --reverse', 'reverse name lookup')
   .option('-s, --ssl', 'grab names from ssl certificates')
   .option('-c, --concurrency <int>', 'limit amount of asyncrounous requests')
-  .option('-b, --bing', 'lookup hostnames on bing')
-  .option('-o, --robtext', 'lookup hostnames on robtext')
+  .option('-b, --bing', 'search bing for vhosts')
+  .option('-o, --robtex', 'grab name records from robtex')
   .option('-t, --target <domain>', 'domain to use')
   .parse(process.argv);
 
@@ -53,6 +53,12 @@ if (program.ssl) {
 
 if (program.bing) {
   bsw.bing(ips, concurrency, function(results) {
+    console.log(results);
+  });
+}
+
+if (program.robtex) {
+  bsw.robtex(ips, concurrency, function(results) {
     console.log(results);
   });
 }
