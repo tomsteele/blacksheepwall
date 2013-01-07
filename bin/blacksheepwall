@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 var fs = require('fs');
 var program = require('commander');
+var async = require('async');
 var bsw = require('../lib/bsw');
 
 //
@@ -30,39 +31,60 @@ var resultsDb = {};
 var ips = fs.readFileSync(program.args[0]).toString().split("\n");
 ips.pop();
 
+var tasks = [];
 if (program.dictionary) {
   if (!program.target) {
     croak('dictionary attack requires target domain');
   }
   var items = fs.readFileSync(program.dictionary).toString().split("\n");
-  bsw.dictionary(program.target, items, concurrency, function(results) {
-    log(results);
+  tasks.push(function(callback) { 
+    bsw.dictionary(program.target, items, concurrency, function(results) {
+      log(results);
+      callback();
+    });
   });
 }
 
 if (program.reverse) {
-  bsw.reverse(ips, concurrency, function(results) {
-    log(results);
+  tasks.push(function(callback) { 
+    bsw.reverse(ips, concurrency, function(results) {
+      log(results);
+      callback();
+    });
   });
 }
 
 if (program.ssl) {
-  bsw.cert(ips, concurrency, function(results) {
-    log(results);
+  tasks.push(function(callback) {
+    bsw.cert(ips, concurrency, function(results) {
+      log(results);
+      callback();
+    });
   });
 }
 
 if (program.bing) {
-  bsw.bing(ips, concurrency, function(results) {
-    log(results);
+  tasks.push(function(callback) {
+    bsw.bing(ips, concurrency, function(results) {
+      log(results);
+      callback();
+    });
   });
 }
 
 if (program.robtex) {
-  bsw.robtex(ips, concurrency, function(results) {
-    log(results);
+  tasks.push(function(callback) {
+    bsw.robtex(ips, concurrency, function(results) {
+      log(results);
+      callback();
+    });
   });
 }
+
+async.parallel(tasks, function(err, results) { 
+  console.log('complete');
+  process.exit(0);
+});
 
 function log(results) {
   if (program.fcrdns) {
