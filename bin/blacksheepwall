@@ -39,8 +39,7 @@ if (program.dictionary) {
   var items = fs.readFileSync(program.dictionary).toString().split("\n");
   tasks.push(function(callback) { 
     bsw.dictionary(program.target, items, concurrency, function(results) {
-      log(results);
-      callback();
+      callback(null, results);
     });
   });
 }
@@ -48,8 +47,7 @@ if (program.dictionary) {
 if (program.reverse) {
   tasks.push(function(callback) { 
     bsw.reverse(ips, concurrency, function(results) {
-      log(results);
-      callback();
+      callback(null, results);
     });
   });
 }
@@ -57,8 +55,7 @@ if (program.reverse) {
 if (program.ssl) {
   tasks.push(function(callback) {
     bsw.cert(ips, concurrency, function(results) {
-      log(results);
-      callback();
+      callback(null, results);
     });
   });
 }
@@ -66,8 +63,7 @@ if (program.ssl) {
 if (program.bing) {
   tasks.push(function(callback) {
     bsw.bing(ips, concurrency, function(results) {
-      log(results);
-      callback();
+      callback(null, results);
     });
   });
 }
@@ -75,27 +71,26 @@ if (program.bing) {
 if (program.robtex) {
   tasks.push(function(callback) {
     bsw.robtex(ips, concurrency, function(results) {
-      log(results);
-      callback();
+      callback(null, results);
     });
   });
 }
 
 async.parallel(tasks, function(err, results) { 
-  console.log('complete');
-  process.exit(0);
-});
 
-function log(results) {
-  if (program.fcrdns) {
+  // TODO: process all retsults here
+  /*if (program.fcrdns) {
     bsw.fcrdns(ips, results, concurrency, function(fcrdnsResults) {
       console.log(fcrdnsResults);
     });
   }
   else {
     console.log(results);
-  }
-}
+  }*/
+  console.log(results); // debug
+  console.log('complete');
+  process.exit(0);
+});
 
 //
 // generic function to print and exit
