@@ -10,14 +10,14 @@ var bsw = require('../lib/bsw');
 program
   .version('0.0.1')
   .usage('[options] <ip file>')
+  .option('-c, --concurrency <int>', 'limit amount of asyncrounous requests')
   .option('-d, --dictionary <file>', 'hostname guessing using a one host per line dictionary')
+  .option('-t, --target <domain>', 'domain to use')
   .option('-r, --reverse', 'reverse name lookup')
   .option('-s, --ssl', 'grab names from ssl certificates')
-  .option('-c, --concurrency <int>', 'limit amount of asyncrounous requests')
   .option('-b, --bing', 'search bing for vhosts')
   .option('-o, --robtex', 'grab name records from robtex')
-  .option('-t, --target <domain>', 'domain to use')
-  .option('-f, --fcrdns', 'Perform Forward Confirmed rDNS and return compliant names')
+  .option('-f, --fcrdns', 'perform forward confirmed rDNS and return compliant names')
   .parse(process.argv);
 
 if (!program.args[0] && !program.dictionary) { 
