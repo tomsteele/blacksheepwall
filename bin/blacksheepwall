@@ -80,8 +80,8 @@ async.parallel(tasks, function(err, results) {
 
   // TODO: process all retsults here
   /*if (program.fcrdns) {
-    bsw.fcrdns(ips, results, concurrency, function(fcrdnsResults) {
-      console.log(fcrdnsResults);
+    bsw.fcrdns(ips, results, concurrency, function(fcResults) {
+      console.log(fcResults);
     });
   }
   else {
