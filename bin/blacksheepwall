@@ -19,6 +19,7 @@ program
   .option('-b, --bing', 'search bing for vhosts')
   .option('-o, --robtex', 'grab name records from robtex')
   .option('-f, --fcrdns', 'perform forward confirmed rDNS and return compliant names')
+  .option('-h, --headers', 'parse http and https response headers for hostnames')
   .parse(process.argv);
 
 if (!program.args[0] && !program.dictionary) { 
@@ -71,6 +72,19 @@ if (program.bing) {
 if (program.robtex) {
   tasks.push(function(callback) {
     bsw.robtex(ips, concurrency, function(results) {
+      callback(null, results);
+    });
+  });
+}
+
+if (program.headers) {
+  tasks.push(function(callback) {
+    bsw.headersHttp(ips, concurrency, function(results) {
+      callback(null, results);
+    });
+  });
+  tasks.push(function(callback) {
+    bsw.headersHttps(ips, concurrency, function(results) {
       callback(null, results);
     });
   });
