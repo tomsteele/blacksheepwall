@@ -58,7 +58,7 @@ if (program.reverse) {
 if (program.ssl) {
   tasks.push(function(callback) {
     bsw.cert(ips, concurrency, function(results) {
-      results['src'] = 'cert';
+      results['src'] = 'ssl-cert';
       callback(null, results);
     });
   });
@@ -85,26 +85,29 @@ if (program.robtex) {
 if (program.headers) {
   tasks.push(function(callback) {
     bsw.headersHttp(ips, concurrency, function(results) {
-      results['src'] = 'http-header';
+      results['src'] = 'header-http';
       callback(null, results);
     });
   });
   tasks.push(function(callback) {
     bsw.headersHttps(ips, concurrency, function(results) {
-      results['src'] = 'https-header';
+      results['src'] = 'header-https';
       callback(null, results);
     });
   });
 }
 
 async.parallel(tasks, function(err, results) {
+  // build db
   for (var r = 0; r < results.length ; r++) {
     for (var i = 0; i < ips.length; i++) {
       if (results[r][ips[i]]) {
         if (!resultsDb[ips[i]]) {
           resultsDb[ips[i]] = {};
-        } 
+          resultsDb[ips[i]].src = [];
+        }
         resultsDb[ips[i]][results[r].src] = results[r][ips[i]];
+        resultsDb[ips[i]].src.push(results[r].src);
       }
     }
   }
@@ -114,11 +117,25 @@ async.parallel(tasks, function(err, results) {
     bsw.fcrdns(ips, results, concurrency, function(fcResults) {
       console.log(fcResults);
     });
-  }
-  else {
-    console.log(results);
   }*/
-  console.log(resultsDb);
+
+  // output csv
+  for (var i = 0; i < ips.length; i++) {
+    if (resultsDb[ips[i]]) {
+      var sources = resultsDb[ips[i]].src;
+      for (var s = 0; s < sources.length; s++) {
+        for (var n = 0; n < resultsDb[ips[i]][sources[s]].length; n++) {
+          console.log( 
+                       ips[i] + ',' + 
+                       resultsDb[ips[i]][sources[s]][n] + ',' + 
+                       sources[s]
+                     );
+        }
+      }  
+    }
+  }  
+
+//  console.log(resultsDb);
   console.log('complete');
   process.exit(0);
 });
