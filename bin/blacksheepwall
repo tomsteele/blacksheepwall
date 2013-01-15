@@ -74,12 +74,12 @@ if (program.bing) {
 }
 
 if (program.web) {
-/*  tasks.push(function(callback) {
+  tasks.push(function(callback) {
     bsw.robtex(ips, concurrency, function(results) {
       results['src'] = 'robtex';
       callback(null, results);
     });
-  });*/
+  });
   tasks.push(function(callback) {
     bsw.serversniff(ips, concurrency, function(results) {
       results['src'] = 'serversniff';
