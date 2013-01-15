@@ -17,7 +17,7 @@ program
   .option('-r, --reverse', 'reverse name lookup')
   .option('-s, --ssl', 'grab names from ssl certificates')
   .option('-b, --bing', 'search bing for vhosts')
-  .option('-o, --robtex', 'grab name records from robtex')
+  .option('-w, --web', 'grab names from DNS websites (i.e., robtex, serversniff)')
   .option('-f, --fcrdns', 'perform forward confirmed rDNS and return compliant names')
   .option('-h, --headers', 'parse http and https response headers for hostnames')
   .parse(process.argv);
@@ -73,10 +73,16 @@ if (program.bing) {
   });
 }
 
-if (program.robtex) {
-  tasks.push(function(callback) {
+if (program.web) {
+/*  tasks.push(function(callback) {
     bsw.robtex(ips, concurrency, function(results) {
       results['src'] = 'robtex';
+      callback(null, results);
+    });
+  });*/
+  tasks.push(function(callback) {
+    bsw.serversniff(ips, concurrency, function(results) {
+      results['src'] = 'serversniff';
       callback(null, results);
     });
   });
