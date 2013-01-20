@@ -1,6 +1,7 @@
 bin/ip.txt
 bin/wl.txt
 *.sqp
+*.swp
 node_modules/*
 .DS_Store
 .idea/
