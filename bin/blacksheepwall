@@ -97,8 +97,12 @@ if (program.headers) {
   });
 }
 
-console.log('working......');
+var now = new Date();
+console.log('bsw started at', now);
+
 async.parallel(tasks, function(err, results) {
+  var now = new Date();
+  console.log('bsw finished at', now);
   results = _.flatten(results);
   if (program.fcrdns) {
     bsw.fcrdns(results, concurrency, function(cleanResults) {
@@ -111,13 +115,17 @@ async.parallel(tasks, function(err, results) {
 });
 
 // output
-function output(results) {
+function output(results)  {
+  console.log('results:');
   results.forEach(function(record) {
-    if (program.csv) {
-      console.log(record.name + ',' +  record.ip + ',' + record.src);
-    }
-    else {
-      console.log('name:', record.name, 'ip:', record.ip, 'method:', record.src);
+    // when we flatten the arrays they well leave an empty object if no results
+    if (record.ip) {
+      if (program.csv) {
+        console.log(record.name + ',' +  record.ip + ',' + record.src);
+      }
+      else {
+        console.log('name:', record.name, 'ip:', record.ip, 'method:', record.src);
+      }
     }
   });
   process.exit(0);
