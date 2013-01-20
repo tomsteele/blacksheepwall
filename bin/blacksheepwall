@@ -19,7 +19,8 @@ program
   .option('-b, --bing', 'search bing for vhosts')
   .option('-w, --web', 'grab names from DNS websites (i.e., robtex, serversniff)')
   .option('-f, --fcrdns', 'perform forward confirmed rDNS and return compliant names')
-  .option('-h, --headers', 'parse http and https response headers for hostnames')
+  .option('--headers', 'parse http and https response headers for hostnames')
+  .option('--csv', 'output to csv')
   .parse(process.argv);
 
 if (!program.args[0] && !program.dictionary) { 
@@ -96,22 +97,28 @@ if (program.headers) {
   });
 }
 
+console.log('working......');
 async.parallel(tasks, function(err, results) {
   results = _.flatten(results);
   if (program.fcrdns) {
     bsw.fcrdns(results, concurrency, function(cleanResults) {
-      outputCsv(cleanResults);
+      output(cleanResults);
     });
   } 
   else {
-    outputCsv(results);
+    output(results);
   }
 });
 
-// output to csv
-function outputCsv(results) {
+// output
+function output(results) {
   results.forEach(function(record) {
-    console.log(record.name + ',' +  record.ip + ',' + record.src);
+    if (program.csv) {
+      console.log(record.name + ',' +  record.ip + ',' + record.src);
+    }
+    else {
+      console.log('name:', record.name, 'ip:', record.ip, 'method:', record.src);
+    }
   });
   process.exit(0);
 }
