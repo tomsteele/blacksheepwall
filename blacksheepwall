@@ -155,6 +155,9 @@ function output(results)  {
         }
       }
     });
+    for (var k in sorted) {
+      sorted[k] = _.uniq(sorted[k]);
+    }
   }
 }
 

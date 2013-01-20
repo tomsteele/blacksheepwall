@@ -1,5 +1,5 @@
-bin/ip.txt
-bin/wl.txt
+ip.txt
+wl.txt
 *.sqp
 *.swp
 node_modules/*
