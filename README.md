@@ -5,9 +5,9 @@ blacksheepwall is a hostname reconnaissance tool written in node.
 
 ## Usage ##
 
-  Usage: blacksheepwall [options] <ip file>
+    Usage: blacksheepwall [options] <ip file>
 
-  Options:
+    Options:
 
     -h, --help               output usage information
     -V, --version            output the version number
