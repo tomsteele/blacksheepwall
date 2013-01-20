@@ -3,7 +3,7 @@ var fs = require('fs');
 var program = require('commander');
 var async = require('async');
 var bsw = require('../lib/bsw');
-
+var _ = require('underscore');
 //
 // takes a file containing ip address until we write a ip address parser
 // that will suck
@@ -97,18 +97,23 @@ if (program.headers) {
 }
 
 async.parallel(tasks, function(err, results) {
-  outputCsv(results);
-  console.log('complete');
-  process.exit(0);
+  results = _.flatten(results);
+  if (program.fcrdns) {
+    bsw.fcrdns(results, concurrency, function(cleanResults) {
+      outputCsv(cleanResults);
+    });
+  } 
+  else {
+    outputCsv(results);
+  }
 });
 
 // output to csv
 function outputCsv(results) {
-    results.forEach(function(result) {
-      result.forEach(function(record) {
-        console.log(record.name + ',' +  record.ip + ',' + record.src);
-      });
-    });
+  results.forEach(function(record) {
+    console.log(record.name + ',' +  record.ip + ',' + record.src);
+  });
+  process.exit(0);
 }
 
 //
