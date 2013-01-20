@@ -103,16 +103,21 @@ var now = new Date();
 console.error('bsw started at', now);
 
 async.parallel(tasks, function(err, results) {
-  var now = new Date();
-  console.error('bsw finished at', now);
-  results = _.flatten(results);
-  if (program.fcrdns) {
-    bsw.fcrdns(results, concurrency, function(cleanResults) {
-      output(cleanResults);
-    });
-  } 
+  if (err) {
+    console.log(err);
+  }
   else {
-    output(results);
+    var now = new Date();
+    console.error('bsw finished at', now);
+    results = _.flatten(results);
+    if (program.fcrdns) {
+      bsw.fcrdns(results, concurrency, function(cleanResults) {
+        output(cleanResults);
+      });
+    }
+    else {
+      output(results);
+    }
   }
 });
 
