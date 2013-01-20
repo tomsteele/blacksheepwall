@@ -2,7 +2,7 @@
 var fs = require('fs');
 var program = require('commander');
 var async = require('async');
-var bsw = require('../lib/bsw');
+var bsw = require('./lib/bsw');
 var _ = require('underscore');
 //
 // takes a file containing ip address until we write a ip address parser
