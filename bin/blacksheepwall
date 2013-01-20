@@ -28,9 +28,10 @@ if (!program.args[0] && !program.dictionary) {
 
 // concurrency gets set to 1000, that's healthy, but you could probably increase the amount
 var concurrency = program.concurrency ? program.concurrency : 1000;
-var resultsDb = {};
-var ips = fs.readFileSync(program.args[0]).toString().split("\n");
-ips.pop();
+if (program.args[0]) {
+  var ips = fs.readFileSync(program.args[0]).toString().split("\n");
+  ips.pop();
+}
 
 var tasks = [];
 if (program.dictionary) {
@@ -40,7 +41,6 @@ if (program.dictionary) {
   var items = fs.readFileSync(program.dictionary).toString().split("\n");
   tasks.push(function(callback) { 
     bsw.dictionary(program.target, items, concurrency, function(results) {
-      results['src'] = 'dictionary';
       callback(null, results);
     });
   });
@@ -49,7 +49,6 @@ if (program.dictionary) {
 if (program.reverse) {
   tasks.push(function(callback) { 
     bsw.reverse(ips, concurrency, function(results) {
-      results['src'] = 'reverse';
       callback(null, results);
     });
   });
@@ -58,7 +57,6 @@ if (program.reverse) {
 if (program.ssl) {
   tasks.push(function(callback) {
     bsw.cert(ips, concurrency, function(results) {
-      results['src'] = 'ssl-cert';
       callback(null, results);
     });
   });
@@ -67,7 +65,6 @@ if (program.ssl) {
 if (program.bing) {
   tasks.push(function(callback) {
     bsw.bing(ips, concurrency, function(results) {
-      results['src'] = 'bing';
       callback(null, results);
     });
   });
@@ -76,13 +73,11 @@ if (program.bing) {
 if (program.web) {
   tasks.push(function(callback) {
     bsw.robtex(ips, concurrency, function(results) {
-      results['src'] = 'robtex';
       callback(null, results);
     });
   });
   tasks.push(function(callback) {
     bsw.serversniff(ips, concurrency, function(results) {
-      results['src'] = 'serversniff';
       callback(null, results);
     });
   });
@@ -91,60 +86,30 @@ if (program.web) {
 if (program.headers) {
   tasks.push(function(callback) {
     bsw.headersHttp(ips, concurrency, function(results) {
-      results['src'] = 'header-http';
       callback(null, results);
     });
   });
   tasks.push(function(callback) {
     bsw.headersHttps(ips, concurrency, function(results) {
-      results['src'] = 'header-https';
       callback(null, results);
     });
   });
 }
 
 async.parallel(tasks, function(err, results) {
-  // build db
-  for (var r = 0; r < results.length ; r++) {
-    for (var i = 0; i < ips.length; i++) {
-      if (results[r][ips[i]]) {
-        if (!resultsDb[ips[i]]) {
-          resultsDb[ips[i]] = {};
-          resultsDb[ips[i]].src = [];
-        }
-        resultsDb[ips[i]][results[r].src] = results[r][ips[i]];
-        resultsDb[ips[i]].src.push(results[r].src);
-      }
-    }
-  }
-
-  // TODO: process all results here
-  /*if (program.fcrdns) {
-    bsw.fcrdns(ips, results, concurrency, function(fcResults) {
-      console.log(fcResults);
-    });
-  }*/
-
-  // output csv
-  for (var i = 0; i < ips.length; i++) {
-    if (resultsDb[ips[i]]) {
-      var sources = resultsDb[ips[i]].src;
-      for (var s = 0; s < sources.length; s++) {
-        for (var n = 0; n < resultsDb[ips[i]][sources[s]].length; n++) {
-          console.log( 
-                       ips[i] + ',' + 
-                       resultsDb[ips[i]][sources[s]][n] + ',' + 
-                       sources[s]
-                     );
-        }
-      }  
-    }
-  }  
-
-//  console.log(resultsDb);
+  outputCsv(results);
   console.log('complete');
   process.exit(0);
 });
+
+// output to csv
+function outputCsv(results) {
+    results.forEach(function(result) {
+      result.forEach(function(record) {
+        console.log(record.name + ',' +  record.ip + ',' + record.src);
+      });
+    });
+}
 
 //
 // generic function to print and exit
