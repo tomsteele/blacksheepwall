@@ -21,6 +21,8 @@ program
   .option('-f, --fcrdns', 'perform forward confirmed rDNS and return compliant names')
   .option('--headers', 'parse http and https response headers for hostnames')
   .option('--csv', 'output to csv')
+  .option('--clean', 'ouput clean data')
+  .option('--json', 'output a json object')
   .parse(process.argv);
 
 if (!program.args[0] && !program.dictionary) { 
@@ -98,11 +100,11 @@ if (program.headers) {
 }
 
 var now = new Date();
-console.log('bsw started at', now);
+console.error('bsw started at', now);
 
 async.parallel(tasks, function(err, results) {
   var now = new Date();
-  console.log('bsw finished at', now);
+  console.error('bsw finished at', now);
   results = _.flatten(results);
   if (program.fcrdns) {
     bsw.fcrdns(results, concurrency, function(cleanResults) {
@@ -116,19 +118,69 @@ async.parallel(tasks, function(err, results) {
 
 // output
 function output(results)  {
-  console.log('results:');
-  results.forEach(function(record) {
-    // when we flatten the arrays they well leave an empty object if no results
-    if (record.ip) {
-      if (program.csv) {
-        console.log(record.name + ',' +  record.ip + ',' + record.src);
-      }
-      else {
+  sorted = {};
+  
+  if (program.csv) { 
+    outcsv(results);
+  }
+
+  else if (program.clean) {
+    sort();
+    outclean(sorted);
+  }
+    
+  else if (program.json) {
+    sort();
+    outjson(sorted);
+  }
+
+  else {
+    results.forEach(function(record) {
+      if (record.ip) {
         console.log('name:', record.name, 'ip:', record.ip, 'method:', record.src);
       }
+    });
+  }
+  process.exit(0);
+
+  function sort() {
+    results.forEach(function(record) {
+      // when we flatten the arrays they well leave an empty object if no results
+      if (record.ip) {
+        if (sorted[record.ip]) {
+          sorted[record.ip].push(record.name);
+        }
+        else {
+          sorted[record.ip] = [record.name];
+        }
+      }
+    });
+  }
+}
+
+function outcsv(results) {
+  results.forEach(function(record) {
+    if (record.ip) {
+      console.log(record.name + ',' +  record.ip + ',' + record.src);
     }
   });
-  process.exit(0);
+}
+
+function outjson(sorted) {
+  jsonout= [];
+  for (var k in sorted) {
+    jsonout.push({ "ip": k, "names": sorted[k] });   
+  }
+  console.log(JSON.stringify(jsonout, null, " "));
+}
+
+function outclean(sorted) {
+  for (var k in sorted) {
+    console.log(k + ':');
+    sorted[k].forEach(function(element) {
+      console.log('   ', element);
+    });
+  }
 }
 
 //
