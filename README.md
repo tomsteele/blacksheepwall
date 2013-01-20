@@ -11,7 +11,7 @@ blacksheepwall is a hostname reconnaissance tool written in node.
 
     -h, --help               output usage information
     -V, --version            output the version number
-    -c, --concurrency <int>  limit amount of asyncrounous requests
+    -c, --concurrency <int>  limit amount of asynchronous requests
     -d, --dictionary <file>  hostname guessing using a one host per line dictionary
     -t, --target <domain>    domain to use
     -r, --reverse            reverse name lookup

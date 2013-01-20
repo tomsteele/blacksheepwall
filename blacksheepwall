@@ -11,7 +11,7 @@ var _ = require('underscore');
 program
   .version('0.0.1')
   .usage('[options] <ip file>')
-  .option('-c, --concurrency <int>', 'limit amount of asyncrounous requests')
+  .option('-c, --concurrency <int>', 'limit amount of asynchronous requests')
   .option('-d, --dictionary <file>', 'hostname guessing using a one host per line dictionary')
   .option('-t, --target <domain>', 'domain to use')
   .option('-r, --reverse', 'reverse name lookup')
