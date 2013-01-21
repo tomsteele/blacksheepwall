@@ -25,6 +25,10 @@ program
   .option('--json', 'output a json object')
   .parse(process.argv);
 
+if (program.target && !program.dictionary) {
+  croak('--target is used for --dictionary attacks');
+}
+
 if (!program.args[0] && !program.dictionary) { 
   croak('no ip file provided');
 }
@@ -37,6 +41,7 @@ if (program.args[0]) {
 }
 
 var tasks = [];
+
 if (program.dictionary) {
   if (!program.target) {
     croak('dictionary attack requires target domain');
