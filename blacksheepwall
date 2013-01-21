@@ -36,8 +36,9 @@ if (!program.args[0] && !program.dictionary) {
 // concurrency gets set to 1000, that's healthy, but you could probably increase the amount
 var concurrency = program.concurrency ? program.concurrency : 1000;
 if (program.args[0]) {
-  var ips = fs.readFileSync(program.args[0]).toString().split("\n");
-  ips.pop();
+  var ips = fs.readFileSync(program.args[0]).toString().trimRight().split("\n");
+  // on windows we need to remove the '\r' 
+  var ips = ips.map(function(x) { return x.trimRight() });
 }
 
 var tasks = [];
@@ -46,7 +47,8 @@ if (program.dictionary) {
   if (!program.target) {
     croak('dictionary attack requires target domain');
   }
-  var items = fs.readFileSync(program.dictionary).toString().split("\n");
+  var items = fs.readFileSync(program.dictionary).toString().trimRight().split("\n");
+  var items = items.map(function(x) { return x.trimRight() });
   tasks.push(function(callback) { 
     bsw.dictionary(program.target, items, concurrency, function(results) {
       callback(null, results);
