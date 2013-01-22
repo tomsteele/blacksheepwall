@@ -16,7 +16,7 @@ program
   .option('-t, --target <domain>', 'domain to use')
   .option('-r, --reverse', 'reverse name lookup')
   .option('-s, --ssl', 'grab names from ssl certificates')
-  .option('-b <apikey>, --bing <apikey>', 'search bing for vhosts')
+  .option('-b, --bing [apikey]', 'search bing for vhosts')
   .option('-w, --web', 'grab names from DNS websites (i.e., robtex, serversniff)')
   .option('-f, --fcrdns', 'perform forward confirmed rDNS and return compliant names')
   .option('--headers', 'parse http and https response headers for hostnames')
@@ -73,11 +73,21 @@ if (program.ssl) {
 }
 
 if (program.bing) {
-  tasks.push(function(callback) {
-    bsw.bing(ips, concurrency, program.bing, function(results) {
-      callback(null, results);
+  if (program.bing.length > 0) {
+    tasks.push(function(callback) {
+      bsw.bingApi(ips, concurrency, program.bing, function(results) {
+        callback(null, results);
+      });
     });
-  });
+  }
+  else {
+    console.error('no bing api key provided, good luck!');
+    tasks.push(function(callback) {
+      bsw.bing(ips, concurrency, function(results) {
+        callback(null, results);
+      });
+    });
+  }
 }
 
 if (program.web) {
