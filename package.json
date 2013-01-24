@@ -10,7 +10,7 @@
       "email": "doylej.ia@gmail.com"
     }
   ],
-  "main": "./lib/bsw",
+  "main": "./lib/blacksheepwall",
   "bin": "./bin/blacksheepwall",
   "repository": {
     "type": "git",
