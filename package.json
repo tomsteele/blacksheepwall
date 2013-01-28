@@ -19,7 +19,8 @@
   "dependencies": {
     "async": "0.1.x",
     "commander": "1.1.x",
-    "underscore": "*"
+    "underscore": "*",
+    "netmask": "*"
   },
   "license": "MIT",
   "engines": {

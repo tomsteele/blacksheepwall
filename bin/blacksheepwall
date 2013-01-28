@@ -4,22 +4,21 @@ var program = require('commander');
 var async = require('async');
 var bsw = require('../lib/blacksheepwall');
 var _ = require('underscore');
-//
-// takes a file containing ip address until we write a ip address parser
-// that will suck
-//
+var netmask = require('netmask');
+
 program
   .version('0.0.1')
-  .usage('[options] <ip file>')
+  .usage('[options] <ip range>')
   .option('-c, --concurrency <int>', 'limit amount of asynchronous requests')
   .option('-d, --dictionary <file>', 'hostname guessing using a one host per line dictionary')
   .option('-t, --target <domain>', 'domain to use')
   .option('-r, --reverse', 'reverse name lookup')
   .option('-s, --ssl', 'grab names from ssl certificates')
-  .option('-b, --bing [apikey]', 'search bing for vhosts')
+  .option('-b, --bing <apikey>', 'search bing for vhosts')
   .option('-w, --web', 'grab names from DNS websites (i.e., robtex, serversniff)')
   .option('-f, --fcrdns', 'perform forward confirmed rDNS and return compliant names')
   .option('--headers', 'parse http and https response headers for hostnames')
+  .option('-i, --input <file>', 'input file containing ip addresses')
   .option('--csv', 'output to csv')
   .option('--clean', 'ouput clean data')
   .option('--json', 'output a json object')
@@ -29,14 +28,30 @@ if (program.target && !program.dictionary) {
   croak('--target is used for --dictionary attacks');
 }
 
-if (!program.args[0] && !program.dictionary) { 
-  croak('no ip file provided');
+if (!program.args[0] && !program.dictionary && !program.input) {
+  croak('no ip range ar dictionary provided');
 }
 
 // concurrency gets set to 1000, that's healthy, but you could probably increase the amount
 var concurrency = program.concurrency ? program.concurrency : 1000;
+var ips = [];
+
+// generate a list of ips from input
 if (program.args[0]) {
-  var ips = fs.readFileSync(program.args[0]).toString().trimRight().split("\n");
+  var block = new netmask.Netmask(program.args[0]);
+  var start = netmask.ip2long(block.first);
+  var end = netmask.ip2long(block.last);
+  while (start <= end) {
+    ips.push(netmask.long2ip(start));
+    start++;
+  }
+  if (program.input) {
+   console.log('[!] ignoring input file');
+  }
+}
+
+if (program.input && !program.args[0]) {
+  var ips = fs.readFileSync(program.input).toString().trimRight().split("\n");
   // on windows we need to remove the '\r' 
   var ips = ips.map(function(x) { return x.trimRight() });
 }
