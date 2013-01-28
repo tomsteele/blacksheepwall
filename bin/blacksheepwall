@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// Copyright (c) 2012 Tom Steele, Jason Doyle
+// See the file license.txt for copying permission
 var fs = require('fs');
 var program = require('commander');
 var async = require('async');
