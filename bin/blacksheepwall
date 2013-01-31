@@ -31,7 +31,7 @@ if (program.target && !program.dictionary) {
 }
 
 if (!program.args[0] && !program.dictionary && !program.input) {
-  croak('no ip range ar dictionary provided');
+  croak('no ip range or dictionary provided');
 }
 
 // concurrency gets set to 1000, that's healthy, but you could probably increase the amount
