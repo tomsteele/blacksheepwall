@@ -4,7 +4,7 @@ blacksheepwall
 blacksheepwall is a hostname reconnaissance tool written in node. 
 
 ## Usage ##
-
+    
     Usage: blacksheepwall [options] <ip range>
 
     Options:
@@ -16,7 +16,8 @@ blacksheepwall is a hostname reconnaissance tool written in node.
       -t, --target <domain>    domain to use
       -r, --reverse            reverse name lookup
       -s, --ssl                grab names from ssl certificates
-      -b, --bing [apikey]      search bing for vhosts
+      -b, --bing               search bing for vhosts
+      -k, --bingkey <apikey>   supply api key for bing searches
       -w, --web                grab names from DNS websites (i.e., robtex, serversniff)
       -f, --fcrdns             perform forward confirmed rDNS and return compliant names
       --headers                parse http and https response headers for hostnames
