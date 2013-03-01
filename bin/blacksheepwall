@@ -19,7 +19,7 @@ program
   .option('-b, --bing', 'search bing for vhosts')
   .option('-k, --bingkey <apikey>', 'supply api key for bing searches')
   .option('-w, --web', 'grab names from DNS websites (i.e., robtex, serversniff)')
-  .option('-f, --fcrdns', 'perform forward confirmed rDNS and return compliant names')
+  .option('-f, --fcrdns', 'perform forward confirmed rDNS on all names')
   .option('--headers', 'parse http and https response headers for hostnames')
   .option('-i, --input <file>', 'input file containing ip addresses')
   .option('--csv', 'output to csv')
