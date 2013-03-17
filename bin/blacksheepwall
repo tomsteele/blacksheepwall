@@ -2,6 +2,7 @@
 // Copyright (c) 2012 Tom Steele, Jason Doyle
 // See the file license.txt for copying permission
 var fs = require('fs');
+var https = require('https');
 var program = require('commander');
 var async = require('async');
 var bsw = require('../lib/blacksheepwall');
@@ -92,11 +93,47 @@ if (program.ssl) {
 
 if (program.bing) {
   if (program.bingkey) {
-    tasks.push(function(callback) {
-      bsw.bingApi(ips, concurrency, program.bingkey, function(results) {
-        callback(null, results);
-      });
-    });
+    function done(err, results) {
+      callback(null, results);
+    }
+    var bingOps = function(callback) {
+      async.waterfall([
+        function (queueCallback) {
+          var apiPaths = ['/Data.ashx/Bing/Search/v1/Web',
+                          '/Data.ashx/Bing/SearchWeb/v1/Web'];
+          function apiDetect(apiPaths) {
+            var options = {
+              host: 'api.datamarket.azure.com',
+              auth: program.bingkey + ':' + program.bingkey
+            };
+            options.path = apiPaths[0] + "?Query=%27I<3BSW%27";
+            if (!apiPaths.length) {
+              console.error("invalid bing api key");
+              process.exit(1);
+            }
+            else {
+              https.get(options, function(res) {
+                if (res.statusCode === 200) {
+                  queueCallback(null, options);
+                }
+                else {
+                  apiPaths.shift();
+                  apiDetect(apiPaths);
+                }
+              });
+            }
+          }
+          apiDetect(apiPaths);
+        },
+
+        function(options, queueCallback) {
+          bsw.bingApi(ips, concurrency, options, function(results) {
+            callback(null, results);
+          });
+        }
+      ], done);
+    }
+    tasks.push(bingOps);
   }
   else {
     console.error('no bing api key provided, good luck!');
