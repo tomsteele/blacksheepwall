@@ -93,48 +93,42 @@ if (program.ssl) {
 
 if (program.bing) {
   if (program.bingkey) {
-    function done(err, results) {
-      callback(null, results);
-    }
-    var bingOps = function(callback) {
-      async.waterfall([
-        function (queueCallback) {
-          var apiPaths = ['/Data.ashx/Bing/Search/v1/Web',
-                          '/Data.ashx/Bing/SearchWeb/v1/Web'];
-          function apiDetect(apiPaths) {
-            var options = {
-              host: 'api.datamarket.azure.com',
-              auth: program.bingkey + ':' + program.bingkey
-            };
-            options.path = apiPaths[0] + "?Query=%27I<3BSW%27";
-            if (!apiPaths.length) {
-              console.error("invalid bing api key");
-              process.exit(1);
-            }
-            else {
-              https.get(options, function(res) {
-                if (res.statusCode === 200) {
-                  queueCallback(null, options);
-                }
-                else {
-                  apiPaths.shift();
-                  apiDetect(apiPaths);
-                }
-              });
-            }
-          }
-          apiDetect(apiPaths);
-        },
+    tasks.push(function(callback) {
+      var apiPaths = ['/Data.ashx/Bing/Search/v1/Web',
+                      '/Data.ashx/Bing/SearchWeb/v1/Web'];
+      apiDetect(apiPaths);
 
-        function(options, queueCallback) {
-          bsw.bingApi(ips, concurrency, options, function(results) {
-            callback(null, results);
-          });
+      function apiDetect(apiPaths) {
+        var options = {
+          host: 'api.datamarket.azure.com',
+          auth: program.bingkey + ':' + program.bingkey
+        };
+        options.path = apiPaths[0] + "?Query=%27I<3BSW%27";
+        if (!apiPaths.length) {
+          console.error("invalid bing api key");
+          process.exit(1);
         }
-      ], done);
-    }
-    tasks.push(bingOps);
+        https.get(options, function(res) {
+          if (res.statusCode === 200) {
+             doBing(options);
+          }
+          else {
+            apiPaths.shift();
+            apiDetect(apiPaths);
+          }
+        });
+      }
+
+      function doBing(options) {
+        console.log(options);
+        bsw.bingApi(ips, concurrency, options, function(results) {
+          console.log(results);
+          callback(null, results);
+        });
+      }
+    });
   }
+
   else {
     console.error('no bing api key provided, good luck!');
     tasks.push(function(callback) {
