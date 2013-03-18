@@ -120,9 +120,7 @@ if (program.bing) {
       }
 
       function doBing(options) {
-        console.log(options);
         bsw.bingApi(ips, concurrency, options, function(results) {
-          console.log(results);
           callback(null, results);
         });
       }
