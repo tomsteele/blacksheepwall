@@ -57,7 +57,7 @@ if (program.args[0]) {
 if (program.input && !program.args[0]) {
   var ips = fs.readFileSync(program.input).toString().trimRight().split("\n");
   // on windows we need to remove the '\r' 
-  var ips = ips.map(function(x) { return x.trimRight() });
+  ips = ips.map(function(x) { return x.trimRight() });
 }
 
 var tasks = [];
@@ -67,7 +67,7 @@ if (program.dictionary) {
     croak('dictionary attack requires target domain');
   }
   var items = fs.readFileSync(program.dictionary).toString().trimRight().split("\n");
-  var items = items.map(function(x) { return x.trimRight() });
+  items = items.map(function(x) { return x.trimRight() });
   tasks.push(function(callback) { 
     bsw.dictionary(program.target, items, concurrency, function(results) {
       callback(null, results);
@@ -187,7 +187,7 @@ async.parallel(tasks, function(err, results) {
 
 // output
 function output(results)  {
-  sorted = {};
+  var sorted = {};
   
   if (program.csv) { 
     outcsv(results);
@@ -239,7 +239,7 @@ function outcsv(results) {
 }
 
 function outjson(sorted) {
-  jsonout= [];
+  var jsonout= [];
   for (var k in sorted) {
     jsonout.push({ "ip": k, "names": sorted[k] });   
   }
