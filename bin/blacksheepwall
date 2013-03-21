@@ -68,8 +68,7 @@ if (program.dictionary) {
     croak('dictionary attack requires target domain');
   }
   tasks.push(function(callback) {
-    // check if target is wildcard *.domain
-    dns.resolve4('dagumit.' + program.target, function (err, addresses) {
+    dns.resolve4('youmustcontructadditionalpylons.' + program.target, function (err, addresses) {
       if (addresses) {
         console.log('skipping dicionary attack for wildcard domain *.' + program.target);
       }
