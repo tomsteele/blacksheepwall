@@ -3,6 +3,7 @@
 // See the file license.txt for copying permission
 var fs = require('fs');
 var https = require('https');
+var dns = require('dns');
 var program = require('commander');
 var async = require('async');
 var bsw = require('../lib/blacksheepwall');
@@ -66,12 +67,24 @@ if (program.dictionary) {
   if (!program.target) {
     croak('dictionary attack requires target domain');
   }
-  var items = fs.readFileSync(program.dictionary).toString().trimRight().split("\n");
-  items = items.map(function(x) { return x.trimRight() });
-  tasks.push(function(callback) { 
-    bsw.dictionary(program.target, items, concurrency, function(results) {
-      callback(null, results);
+  tasks.push(function(callback) {
+    // check if target is wildcard *.domain
+    dns.resolve4('dagumit.' + program.target, function (err, addresses) {
+      if (addresses) {
+        console.log('skipping dicionary attack for wildcard domain *.' + program.target);
+      }
+      else {
+        doDictionary();
+      }
     });
+
+    function doDictionary() {
+      var items = fs.readFileSync(program.dictionary).toString().trimRight().split("\n");
+      items = items.map(function(x) { return x.trimRight() });
+      bsw.dictionary(program.target, items, concurrency, function(results) {
+        callback(null, results);
+      });
+    }
   });
 }
 
