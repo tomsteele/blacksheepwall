@@ -105,8 +105,7 @@ if (program.bing) {
         };
         options.path = apiPaths[0] + "?Query=%27I<3BSW%27";
         if (!apiPaths.length) {
-          console.error("invalid bing api key");
-          process.exit(1);
+          croak("invalid bing api key");
         }
         https.get(options, function(res) {
           if (res.statusCode === 200) {
