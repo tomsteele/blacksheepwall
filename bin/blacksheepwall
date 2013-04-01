@@ -180,7 +180,7 @@ async.parallel(tasks, function(err, results) {
     var now = new Date();
     console.error('bsw finished at', now);
     results = _.flatten(results);
-    if (program.fcrdns) {
+    if (program.fcrdns && results.length) {
       bsw.fcrdns(results, concurrency, function(cleanResults) {
         output(cleanResults);
       });
