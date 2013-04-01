@@ -154,11 +154,6 @@ if (program.web) {
       callback(null, results);
     });
   });
-  tasks.push(function(callback) {
-    bsw.serversniff(ips, concurrency, function(results) {
-      callback(null, results);
-    });
-  });
 }
 
 if (program.headers) {
