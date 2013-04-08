@@ -11,7 +11,7 @@ var _ = require('underscore');
 var netmask = require('netmask');
 
 program
-  .version('0.0.2')
+  .version('0.0.3')
   .usage('[options] <ip range>')
   .option('-c, --concurrency <int>', 'limit amount of asynchronous requests')
   .option('-d, --dictionary <file>', 'hostname guessing using a one host per line dictionary')
