@@ -59,7 +59,7 @@ if (program.input && !program.args[0]) {
   if (!fs.existsSync(program.input)) {
     croak('Invalid input file location');
   }
-  var ips = fs.readFileSync(program.input).toString().trimRight().split("\n");
+  var ips = fs.readFileSync(program.input, {encoding: 'utf8'}).trimRight().split("\n");
   // on windows we need to remove the '\r' 
   ips = ips.map(function(x) { return x.trimRight() });
 }
@@ -81,7 +81,7 @@ if (program.dictionary) {
     });
 
     function doDictionary() {
-      var items = fs.readFileSync(program.dictionary).toString().trimRight().split("\n");
+      var items = fs.readFileSync(program.dictionary, {encoding: 'utf8'}).trimRight().split("\n");
       items = items.map(function(x) { return x.trimRight() });
       bsw.dictionary(program.target, items, concurrency, function(results) {
         callback(null, results);
