@@ -161,12 +161,7 @@ if (program.web) {
 
 if (program.headers) {
   tasks.push(function(callback) {
-    bsw.headersHttp(ips, concurrency, function(results) {
-      callback(null, results);
-    });
-  });
-  tasks.push(function(callback) {
-    bsw.headersHttps(ips, concurrency, function(results) {
+    bsw.headers(ips, concurrency, function(results) {
       callback(null, results);
     });
   });
