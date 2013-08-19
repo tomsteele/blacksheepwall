@@ -17,7 +17,7 @@
     "url": "https://github.com/tomsteele/blacksheepwall.git"
   },
   "dependencies": {
-    "async": "0.1.x",
+    "async": "0.2.x",
     "commander": "1.1.x",
     "underscore": "*",
     "netmask": "*"
