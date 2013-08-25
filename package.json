@@ -13,7 +13,7 @@
   "main": "./lib/cmd.js",
   "bin": {
     "blacksheepwall": "./bin/cmd.js"
-  }
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/tomsteele/blacksheepwall.git"
