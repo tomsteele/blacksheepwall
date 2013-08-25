@@ -22,7 +22,8 @@
     "async": "0.2.x",
     "commander": "1.1.x",
     "underscore": "*",
-    "netmask": "*"
+    "netmask": "*",
+    "winston": "~0.7.2"
   },
   "license": "MIT",
   "engines": {
