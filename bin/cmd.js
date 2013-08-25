@@ -29,185 +29,98 @@ program
   .option('--json', 'output a json object')
   .parse(process.argv);
 
+// BSW object options creation
+var bswOptions = {};
+bswOptions.concurrency = program.concurrency ? program.concurrency : 1000;
+bswOptions.hosts = [];
+// Ensure client specified at least one item of data for attacks
+if (!program.args[0] && !program.dictionary && !program.input) {
+  croak('No ip range or dictionary provided');
+}
+// Ensure client provided a target domain and a dictionary file
 if (program.target && !program.dictionary) {
   croak('--target is used for --dictionary attacks');
+} 
+if (program.dictionary && !program.target) {
+  croak('Dictionary attack requires target set with --target');
 }
-
-if (!program.args[0] && !program.dictionary && !program.input) {
-  croak('no ip range or dictionary provided');
+// Read the domain file and set target domain
+if (program.dictionary) {
+  if (!fs.existsSync(program.dictionary)) {
+    croak('Invalid dictionary file location');
+  }
+  bswOptions.names = fs.readFileSync(program.dictionary, {encoding: 'utf8'}).trimRight().split("\n");
+  bswOptions.names = bswOptions.names.map(function(x) { return x.trimRight() });
+  bswOptions.domain = program.target;
 }
-
-// concurrency gets set to 1000, that's healthy, but you could probably increase the amount
-var concurrency = program.concurrency ? program.concurrency : 1000;
-var ips = [];
-
-// generate a list of ips from input
+// Parse a netblock as provided and build host list
 if (program.args[0]) {
   var block = new netmask.Netmask(program.args[0]);
   var start = netmask.ip2long(block.first);
   var end = netmask.ip2long(block.last);
   while (start <= end) {
-    ips.push(netmask.long2ip(start));
+    bswOptions.hosts.push(netmask.long2ip(start));
     start++;
   }
+  // An input file was provided and a netblock was given
   if (program.input) {
    console.log('[!] ignoring input file');
   }
-}
-
-if (program.input && !program.args[0]) {
+// Or build the list of hosts file a file
+} else if (program.input) {
   if (!fs.existsSync(program.input)) {
     croak('Invalid input file location');
   }
-  var ips = fs.readFileSync(program.input, {encoding: 'utf8'}).trimRight().split("\n");
+  bswOptions.hosts = fs.readFileSync(program.input, {encoding: 'utf8'}).trimRight().split("\n");
   // on windows we need to remove the '\r' 
-  ips = ips.map(function(x) { return x.trimRight() });
+  bswOptions.hosts = bswOptions.hosts.map(function(x) { return x.trimRight() });
 }
+var b = bsw(bswOptions);
 
+// Task list for async.parallel 
 var tasks = [];
-
+// Build task list
 if (program.dictionary) {
-  if (!program.target) {
-    croak('dictionary attack requires target domain');
-  }
-  tasks.push(function(callback) {
+  tasks.push(function(cb) {
+    // Check for wildcard domain. If this domain exists, stop, this target is too awesome to attack 
     dns.resolve4('youmustconstructadditionalpylons.' + program.target, function (err, addresses) {
       if (addresses) {
         console.log('skipping dictionary lookups for wildcard domain *.' + program.target);
-      }
-      else {
-        doDictionary();
-      }
-    });
-
-    function doDictionary() {
-      var items = fs.readFileSync(program.dictionary, {encoding: 'utf8'}).trimRight().split("\n");
-      items = items.map(function(x) { return x.trimRight() });
-      bsw.dictionary(program.target, items, concurrency, function(results) {
-        callback(null, results);
-      });
-    }
-  });
-}
-
-if (program.reverse) {
-  tasks.push(function(callback) { 
-    bsw.reverse(ips, concurrency, function(results) {
-      callback(null, results);
-    });
-  });
-}
-
-if (program.ssl) {
-  tasks.push(function(callback) {
-    bsw.cert(ips, concurrency, function(results) {
-      callback(null, results);
-    });
-  });
-}
-
-if (program.bing) {
-  if (program.bingkey) {
-    tasks.push(function(callback) {
-      var apiPaths = ['/Data.ashx/Bing/Search/v1/Web',
-                      '/Data.ashx/Bing/SearchWeb/v1/Web'];
-      apiDetect(apiPaths);
-
-      function apiDetect(apiPaths) {
-        var options = {
-          host: 'api.datamarket.azure.com',
-          auth: program.bingkey + ':' + program.bingkey
-        };
-        options.path = apiPaths[0] + "?Query=%27I<3BSW%27";
-        if (!apiPaths.length) {
-          croak("invalid bing api key");
-        }
-        https.get(options, function(res) {
-          if (res.statusCode === 200) {
-             doBing(options);
-          }
-          else {
-            apiPaths.shift();
-            apiDetect(apiPaths);
-          }
-        });
-      }
-
-      function doBing(options) {
-        bsw.bingApi(ips, concurrency, options, function(results) {
-          callback(null, results);
+      } else {
+        b.dictionary(function(err) {
+          cb();
         });
       }
     });
-  }
-
-  else {
-    console.error('no bing api key provided, good luck!');
-    tasks.push(function(callback) {
-      bsw.bing(ips, concurrency, function(results) {
-        callback(null, results);
-      });
-    });
-  }
-}
-
-if (program.web) {
-  tasks.push(function(callback) {
-    bsw.robtex(ips, concurrency, function(results) {
-      callback(null, results);
-    });
   });
-}
+};
 
-if (program.headers) {
-  tasks.push(function(callback) {
-    bsw.headers(ips, concurrency, function(results) {
-      callback(null, results);
-    });
-  });
-}
-
+// Output start time and run
 var now = new Date();
 console.error('bsw started at', now);
-
-async.parallel(tasks, function(err, results) {
+async.parallel(tasks, function(err) {
   if (err) {
     console.log(err);
-  }
-  else {
+  } else {
     var now = new Date();
     console.error('bsw finished at', now);
-    results = _.flatten(results);
-    if (program.fcrdns && results.length) {
-      bsw.fcrdns(results, concurrency, function(cleanResults) {
-        output(cleanResults);
-      });
-    }
-    else {
-      output(results);
-    }
+    var results = _.flatten(b.results);
+    output(results);
   }
 });
 
-// output
-function output(results)  {
+// Handle output
+function output(results) {
   var sorted = {};
-  
-  if (program.csv) { 
+  if (program.csv) {
     outcsv(results);
-  }
-
-  else if (program.clean) {
+  } else if (program.clean) {
     sort();
     outclean(sorted);
-  }
-    
-  else if (program.json) {
+  } else if (program.json) {
     sort();
     outjson(sorted);
-  }
-
-  else {
+  } else {
     results.forEach(function(record) {
       if (record.ip) {
         console.log('name:', record.name, 'ip:', record.ip, 'method:', record.src);
@@ -218,12 +131,11 @@ function output(results)  {
 
   function sort() {
     results.forEach(function(record) {
-      // when we flatten the arrays they well leave an empty object if no results
+      // When we flatten the arrays they well leave an empty object if no results
       if (record.ip) {
         if (sorted[record.ip]) {
           sorted[record.ip].push(record.name);
-        }
-        else {
+        } else {
           sorted[record.ip] = [record.name];
         }
       }
@@ -237,7 +149,7 @@ function output(results)  {
 function outcsv(results) {
   results.forEach(function(record) {
     if (record.ip) {
-      console.log(record.name + ',' +  record.ip + ',' + record.src);
+      console.log(record.name + ',' + record.ip + ',' + record.src);
     }
   });
 }
@@ -245,7 +157,7 @@ function outcsv(results) {
 function outjson(sorted) {
   var jsonout= [];
   for (var k in sorted) {
-    jsonout.push({ "ip": k, "names": sorted[k] });   
+    jsonout.push({ "ip": k, "names": sorted[k] });
   }
   console.log(JSON.stringify(jsonout, null, " "));
 }
@@ -254,14 +166,11 @@ function outclean(sorted) {
   for (var k in sorted) {
     console.log(k + ':');
     sorted[k].forEach(function(element) {
-      console.log('   ', element);
+      console.log(' ', element);
     });
   }
 }
-
-//
-// generic function to print and exit
-//
+// Generic function to print and exit
 function croak(errorMessage) {
   console.log(errorMessage);
   process.exit(1);
