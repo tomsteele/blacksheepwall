@@ -30,6 +30,13 @@ program
   .option('--json', 'output a json object')
   .parse(process.argv);
 
+// Catch any exceptions and plead with the client to notify us
+process.on('uncaughtException', function(err) {
+  winston.error('Uncaught exception: Please notify the developers of your error.');
+  winston.error(err);
+  process.exit(1);
+});
+
 // BSW object options creation
 var bswOptions = {};
 bswOptions.concurrency = program.concurrency ? program.concurrency : 1000;
