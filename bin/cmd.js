@@ -179,9 +179,15 @@ async.parallel(tasks, function(err) {
   } else {
     process.nextTick(function() {
       now = new Date();
-      console.error('bsw finished at', now);
-      var results = _.flatten(b.results);
-      output(results);
+      b.results = _.flatten(b.results);
+      if (program.fcrdns && b.results.length > 0) {
+        b.fcrdns(function() {
+          output(b.results);
+        })
+      } else {
+        console.error('bsw finished at', now);
+        output(b.results);
+      }
     });
   }
 });
