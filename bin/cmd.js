@@ -156,6 +156,13 @@ if (program.bing) {
     });
   }
 }
+if (program.web) {
+  tasks.push(function(cb) {
+    b.robtex(function() {
+      cb();
+    });
+  });
+}
 // Output start time and run
 var now = new Date();
 console.error('bsw started at', now);
