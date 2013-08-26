@@ -163,6 +163,13 @@ if (program.web) {
     });
   });
 }
+if (program.headers) {
+  tasks.push(function(cb) {
+    b.headers(function() {
+      cb();
+    });
+  });
+}
 // Output start time and run
 var now = new Date();
 console.error('bsw started at', now);
