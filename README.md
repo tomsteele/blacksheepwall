@@ -18,7 +18,6 @@ blacksheepwall is a hostname reconnaissance tool written in node.
       -s, --ssl                grab names from ssl certificates
       -b, --bing               search bing for vhosts
       -k, --bingkey <apikey>   supply api key for bing searches
-      -w, --web                grab names from DNS websites (i.e., robtex, serversniff)
       -f, --fcrdns             perform forward confirmed rDNS and return compliant names
       --headers                parse http and https response headers for hostnames
       -i, --input <file>       input file containing ip addresses
