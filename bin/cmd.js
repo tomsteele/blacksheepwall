@@ -21,7 +21,8 @@ program
   .option('-s, --ssl', 'grab names from ssl certificates')
   .option('-b, --bing', 'search bing for vhosts')
   .option('-k, --bingkey <apikey>', 'supply api key for bing searches')
-  .option('-w, --web', 'grab names from DNS websites (currently only robtex.com)')
+  // Web currently disabled
+  // .option('-w, --web', 'grab names from DNS websites (currently only robtex.com)')
   .option('-f, --fcrdns', 'perform forward confirmed rDNS on all names')
   .option('--headers', 'parse http and https response headers for hostnames')
   .option('-i, --input <file>', 'input file containing ip addresses')
@@ -163,13 +164,13 @@ if (program.bing) {
     });
   }
 }
-if (program.web) {
-  tasks.push(function(cb) {
-    b.robtex(function() {
-      cb();
-    });
-  });
-}
+
+// Web currently disabled until new functions are created
+// if (program.web) {
+//   tasks.push(function(cb) {
+//     });
+//   });
+// }
 if (program.headers) {
   tasks.push(function(cb) {
     b.headers(function() {
