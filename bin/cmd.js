@@ -32,7 +32,7 @@ program
 
 // Catch any exceptions and plead with the client to notify us
 process.on('uncaughtException', function(err) {
-  winston.error('Uncaught exception: Please notify the developers of your error.');
+  winston.error('Uncaught exception: Please notify the developers.');
   winston.error(err);
   process.exit(1);
 });
