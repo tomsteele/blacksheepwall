@@ -9,6 +9,7 @@ var async = require('async');
 var bsw = require('../lib/blacksheepwall');
 var _ = require('underscore');
 var netmask = require('netmask');
+var winston = require('winston');
 
 program
   .version('0.0.3')
@@ -85,15 +86,29 @@ if (program.dictionary) {
     // Check for wildcard domain. If this domain exists, stop, this target is too awesome to attack 
     dns.resolve4('youmustconstructadditionalpylons.' + program.target, function (err, addresses) {
       if (addresses) {
-        console.log('skipping dictionary lookups for wildcard domain *.' + program.target);
+        winston.info('Skipping dictionary lookups for wildcard domain *.' + program.target);
       } else {
-        b.dictionary(function(err) {
+        b.dictionary(function() {
           cb();
         });
       }
     });
   });
-};
+}
+if (program.reverse) {
+  tasks.push(function(cb) {
+    b.reverse(function() {
+      cb();
+    });
+  });
+}
+if (program.ssl) {
+  tasks.push(function(cb) {
+    b.ssl(function() {
+      cb();
+    });
+  })
+}
 
 // Output start time and run
 var now = new Date();
@@ -102,10 +117,12 @@ async.parallel(tasks, function(err) {
   if (err) {
     console.log(err);
   } else {
-    var now = new Date();
-    console.error('bsw finished at', now);
-    var results = _.flatten(b.results);
-    output(results);
+    process.nextTick(function() {
+      now = new Date();
+      console.error('bsw finished at', now);
+      var results = _.flatten(b.results);
+      output(results);
+    });
   }
 });
 
