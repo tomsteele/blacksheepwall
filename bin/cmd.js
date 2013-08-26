@@ -109,7 +109,53 @@ if (program.ssl) {
     });
   })
 }
-
+if (program.bing) {
+  // User provided a Bing API key
+  if (program.bingkey) {
+    tasks.push(function(cb) {
+      // Detect which API path the key is valid for
+      var apiPaths = ['/Data.ashx/Bing/Search/v1/Web', '/Data.ashx/Bing/SearchWeb/v1/Web'];
+      apiDetect(apiPaths);
+      function apiDetect(apiPaths) {
+        var options = {
+          host: 'api.datamarket.azure.com',
+          auth: program.bingkey + ':' + program.bingkey
+        };
+        // Sample query to detect correct path
+        options.path = apiPaths[0] + "?Query=%27I<3BSW%27";
+        // If apiPaths is 0, we didn't find a valid path
+        // Show error and skip
+        if (!apiPaths.length) {
+          winston.error('Invalid Bing API key');
+          cb();
+        } else {
+          // Attempt to call the path using the sample query
+          // if 200, the path is valid, use it for the host queries
+          https.get(options, function(res) {
+            if (res.statusCode === 200) {
+              b.bingApi(options, function() {
+                cb();
+              });
+            }
+            // Shift the previous path off the array and attempt the next one
+            else {
+              apiPaths.shift();
+              apiDetect(apiPaths);
+            }
+          });
+        }
+      }
+    });
+  } else {
+    // No key provided. Do a HTML based lookup
+    winston.info('No Bing API key provided, good luck!');
+    tasks.push(function(cb) {
+      b.bing(function() {
+        cb();
+      });
+    });
+  }
+}
 // Output start time and run
 var now = new Date();
 console.error('bsw started at', now);
