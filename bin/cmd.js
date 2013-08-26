@@ -189,6 +189,7 @@ async.parallel(tasks, function(err) {
       b.results = _.flatten(b.results);
       if (program.fcrdns && b.results.length > 0) {
         b.fcrdns(function() {
+          console.error('bsw finished at', now);
           output(b.results);
         })
       } else {
