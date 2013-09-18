@@ -3,6 +3,17 @@ blacksheepwall
 
 blacksheepwall is a hostname reconnaissance tool written in node. 
 
+## Installation ##
+Once you have installed node, you can install globally using npm, this may require escalated privileges:
+
+    npm install -g blacksheepwall
+
+Alternatively, you can clone the repository, install the required modules using npm, and run from bin/:
+
+    git clone https://github.com/tomsteele/blacksheepwall.git
+    cd blacksheepwall && npm install
+    bin/cmd.js
+    
 ## Usage ##
     
     Usage: blacksheepwall [options] <ip range>
