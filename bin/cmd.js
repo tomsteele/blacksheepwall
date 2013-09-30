@@ -94,7 +94,7 @@ if (program.dictionary) {
     // Check for wildcard domain. If this domain exists, stop, this target is too awesome to attack 
     dns.resolve4('youmustconstructadditionalpylons.' + program.target, function (err, addresses) {
       if (addresses) {
-        winston.info('Skipping dictionary lookups for wildcard domain *.' + program.target);
+        winston.error('Skipping dictionary lookups for wildcard domain *.' + program.target);
       } else {
         b.dictionary(function() {
           cb();
