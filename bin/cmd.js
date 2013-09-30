@@ -156,7 +156,6 @@ if (program.bing) {
     });
   } else {
     // No key provided. Do a HTML based lookup
-    winston.info('No Bing API key provided, good luck!');
     tasks.push(function(cb) {
       b.bing(function() {
         cb();
