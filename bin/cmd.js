@@ -12,7 +12,7 @@ var netmask = require('netmask');
 var winston = require('winston');
 
 program
-  .version('0.5.0')
+  .version('0.6.0')
   .usage('[options] <ip range>')
   .option('-c, --concurrency <int>', 'limit amount of asynchronous requests')
   .option('-d, --dictionary <file>', 'hostname guessing using a one host per line dictionary')
