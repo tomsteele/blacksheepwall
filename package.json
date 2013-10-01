@@ -10,7 +10,7 @@
       "email": "doylej.ia@gmail.com"
     }
   ],
-  "main": "./lib/cmd.js",
+  "main": "index.js",
   "bin": {
     "blacksheepwall": "./bin/cmd.js"
   },
