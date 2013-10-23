@@ -8,6 +8,9 @@ var https = require('https');
 var http = require('http');
 var url = require('url');
 var winston = require('winston');
+var yandex = require('yandex-search');
+var xml2js = require('libxml-to-js');
+var _ = require('lodash');
 
 module.exports = blacksheepwall;
 BSW.prototype = {};
@@ -23,11 +26,11 @@ function BSW(options) {
   self.domain = options.domain || null;
   self.names = options.names || null;
   self.concurrency = options.concurrency || 1000;
-  self.results = []; 
+  self.results = [];
 }
 
 // Loops over self.names looking for the ip of
-// name + self.domain. 
+// name + self.domain.
 BSW.prototype.dictionary = function(callback) {
    var self = this;
    async.eachLimit(self.names, self.concurrency, function(subDomain, asyncCallback) {
@@ -316,6 +319,73 @@ BSW.prototype.headers = function(callback) {
       }
     }
   }
+};
+
+BSW.prototype.yandex = function(api, callback) {
+  var self = this;
+  var parts = self.domain.split('.');
+  var query = 'rhost:' + parts[1] + '.' + parts[0] + '.*';
+  var options = {url: api, query: query};
+  var domains = [];
+  var page = 0;
+  function search() {
+    yandex(options, handleSearch);
+  }
+  function handleSearch(err, results) {
+    if (err) {
+      if (typeof process.env.SHOW_BSW_ERRORS !== 'undefined') {
+        winston.error(err.message);
+      }
+      return callback();
+    }
+    return xml2js(results, parseXml);
+  }
+  function parseXml(err, result) {
+    if (err) {
+      if (typeof process.env.SHOW_BSW_ERRORS !== 'undefined') {
+        winston.error(err.message);
+      }
+      return callback();
+    } else if (result.response.error) {
+      if (typeof process.env.SHOW_BSW_ERRORS !== 'undefined') {
+        winston.error(result.response.error['#']);
+      }
+      return callback();
+    } else {
+      var pages = result.response.results.grouping.found[0]['#'] / 50;
+      domains = domains.concat(result.response.results.grouping.group.map(function(g) {
+        return g.doc.domain;
+      }));
+      if (page < pages) {
+        page++;
+        return search();
+      } else {
+        return lookUpDomains();
+      }
+    }
+  }
+  function lookUpDomains() {
+    async.eachLimit(_.uniq(domains), self.concurrency, function(fqdn, asyncCallback) {
+      var d = domain.create();
+      d.on('error', function(err) {
+        if (typeof process.env.SHOW_BSW_ERRORS !== 'undefined') {
+          winston.error(err.message);
+        }
+        asyncCallback();
+      });
+      d.run(function() {
+        dns.resolve4(fqdn, function(err, addresses) {
+          if (err) {
+            asyncCallback();
+          } else {
+            self.results.push({ip: addresses[0], name: fqdn, src: 'yandex'});
+            asyncCallback();
+          }
+        });
+      });
+    }, callback);
+  }
+  search();
 };
 
 BSW.prototype.fcrdns = function(callback) {

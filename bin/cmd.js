@@ -21,6 +21,7 @@ program
   .option('-s, --ssl', 'grab names from ssl certificates')
   .option('-b, --bing', 'search bing for vhosts')
   .option('-k, --bingkey <apikey>', 'supply api key for bing searches')
+  .option('-y, --yandex <apiurl>', 'use yandex rhost')
   // Web currently disabled
   // .option('-w, --web', 'grab names from DNS websites (currently only robtex.com)')
   .option('-f, --fcrdns', 'perform forward confirmed rDNS on all names')
@@ -34,7 +35,7 @@ program
 // Catch any exceptions and plead with the client to notify us
 process.on('uncaughtException', function(err) {
   winston.error('Uncaught exception: Please notify the developers.');
-  winston.error(err);
+  winston.error(err.message);
   process.exit(1);
 });
 
@@ -43,15 +44,15 @@ var bswOptions = {};
 bswOptions.concurrency = program.concurrency ? program.concurrency : 1000;
 bswOptions.hosts = [];
 // Ensure client specified at least one item of data for attacks
-if (!program.args[0] && !program.dictionary && !program.input) {
-  croak('No ip range or dictionary provided');
+if (!program.args[0] && !program.dictionary && !program.input && !program.yandex) {
+  croak('No ip range or domain level searches provided');
 }
-// Ensure client provided a target domain and a dictionary file
-if (program.target && !program.dictionary) {
-  croak('--target is used for --dictionary attacks');
-} 
 if (program.dictionary && !program.target) {
-  croak('Dictionary attack requires target set with --target');
+  croak('Dictionary attack requires target domain set with --target');
+}
+// Ensure client provided target for yandex search
+if (program.yandex && !program.target) {
+  croak('Yandex search requires target domain set with --target');
 }
 // Read the domain file and set target domain
 if (program.dictionary) {
@@ -59,7 +60,9 @@ if (program.dictionary) {
     croak('Invalid dictionary file location');
   }
   bswOptions.names = fs.readFileSync(program.dictionary, {encoding: 'utf8'}).trimRight().split("\n");
-  bswOptions.names = bswOptions.names.map(function(x) { return x.trimRight() });
+  bswOptions.names = bswOptions.names.map(function(x) { return x.trimRight(); });
+}
+if (program.target) {
   bswOptions.domain = program.target;
 }
 // Parse a netblock as provided and build host list
@@ -116,6 +119,13 @@ if (program.ssl) {
       cb();
     });
   })
+}
+if (program.yandex) {
+  tasks.push(function(cb) {
+    b.yandex(program.yandex, function() {
+      cb();
+    });
+  });
 }
 if (program.bing) {
   // User provided a Bing API key
