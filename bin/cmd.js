@@ -12,16 +12,16 @@ var netmask = require('netmask');
 var winston = require('winston');
 
 program
-  .version('0.6.0')
+  .version('0.7.0')
   .usage('[options] <ip range>')
-  .option('-c, --concurrency <int>', 'limit amount of asynchronous requests')
+  .option('-c, --concurrency <int>', 'limit amount of concurrent requests')
   .option('-d, --dictionary <file>', 'hostname guessing using a one host per line dictionary')
-  .option('-t, --target <domain>', 'domain to use')
+  .option('-t, --target <domain>', 'target domain to use for domain based operations')
   .option('-r, --reverse', 'reverse name lookup')
   .option('-s, --ssl', 'grab names from ssl certificates')
   .option('-b, --bing', 'search bing for vhosts')
   .option('-k, --bingkey <apikey>', 'supply api key for bing searches')
-  .option('-y, --yandex <apiurl>', 'use yandex rhost')
+  .option('-y, --yandex <apiurl>', 'search yandex using rhost operator, requires API key')
   // Web currently disabled
   // .option('-w, --web', 'grab names from DNS websites (currently only robtex.com)')
   .option('-f, --fcrdns', 'perform forward confirmed rDNS on all names')
@@ -84,8 +84,8 @@ if (program.args[0]) {
     croak('Invalid input file location');
   }
   bswOptions.hosts = fs.readFileSync(program.input, {encoding: 'utf8'}).trimRight().split("\n");
-  // on windows we need to remove the '\r' 
-  bswOptions.hosts = bswOptions.hosts.map(function(x) { return x.trimRight() });
+  // on windows we need to remove the '\r'
+  bswOptions.hosts = bswOptions.hosts.map(function(x) { return x.trimRight(); });
 }
 var b = bsw(bswOptions);
 
@@ -118,7 +118,7 @@ if (program.ssl) {
     b.ssl(function() {
       cb();
     });
-  })
+  });
 }
 if (program.yandex) {
   tasks.push(function(cb) {
@@ -201,7 +201,7 @@ async.parallel(tasks, function(err) {
         b.fcrdns(function() {
           console.error('bsw finished at', now);
           output(b.results);
-        })
+        });
       } else {
         console.error('bsw finished at', now);
         output(b.results);
