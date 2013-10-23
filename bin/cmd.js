@@ -7,7 +7,7 @@ var dns = require('dns');
 var program = require('commander');
 var async = require('async');
 var bsw = require('../');
-var _ = require('underscore');
+var _ = require('lodash');
 var netmask = require('netmask');
 var winston = require('winston');
 
@@ -22,8 +22,6 @@ program
   .option('-b, --bing', 'search bing for vhosts')
   .option('-k, --bingkey <apikey>', 'supply api key for bing searches')
   .option('-y, --yandex <apiurl>', 'search yandex using rhost operator, requires API key')
-  // Web currently disabled
-  // .option('-w, --web', 'grab names from DNS websites (currently only robtex.com)')
   .option('-f, --fcrdns', 'perform forward confirmed rDNS on all names')
   .option('--headers', 'parse http and https response headers for hostnames')
   .option('-i, --input <file>', 'input file containing ip addresses')
@@ -89,7 +87,7 @@ if (program.args[0]) {
 }
 var b = bsw(bswOptions);
 
-// Task list for async.parallel 
+// Task list for async.parallel
 var tasks = [];
 // Build task list
 if (program.dictionary) {
@@ -99,32 +97,24 @@ if (program.dictionary) {
       if (addresses) {
         winston.error('Skipping dictionary lookups for wildcard domain *.' + program.target);
       } else {
-        b.dictionary(function() {
-          cb();
-        });
+        b.dictionary(cb);
       }
     });
   });
 }
 if (program.reverse) {
   tasks.push(function(cb) {
-    b.reverse(function() {
-      cb();
-    });
+    b.reverse(cb);
   });
 }
 if (program.ssl) {
   tasks.push(function(cb) {
-    b.ssl(function() {
-      cb();
-    });
+    b.ssl(cb);
   });
 }
 if (program.yandex) {
   tasks.push(function(cb) {
-    b.yandex(program.yandex, function() {
-      cb();
-    });
+    b.yandex(program.yandex, cb);
   });
 }
 if (program.bing) {
@@ -151,9 +141,7 @@ if (program.bing) {
           // if 200, the path is valid, use it for the host queries
           https.get(options, function(res) {
             if (res.statusCode === 200) {
-              b.bingApi(options, function() {
-                cb();
-              });
+              b.bingApi(options, cb);
             }
             // Shift the previous path off the array and attempt the next one
             else {
@@ -167,26 +155,16 @@ if (program.bing) {
   } else {
     // No key provided. Do a HTML based lookup
     tasks.push(function(cb) {
-      b.bing(function() {
-        cb();
-      });
+      b.bing(cb);
     });
   }
 }
-
-// Web currently disabled until new functions are created
-// if (program.web) {
-//   tasks.push(function(cb) {
-//     });
-//   });
-// }
 if (program.headers) {
   tasks.push(function(cb) {
-    b.headers(function() {
-      cb();
-    });
+    b.headers(cb);
   });
 }
+
 // Output start time and run
 var now = new Date();
 console.error('bsw started at', now);
