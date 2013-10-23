@@ -102,12 +102,12 @@ BSW.prototype.ssl = function(callback) {
       var cleartextStream = tls.connect(tlsOptions, function() {
         var certificate = cleartextStream.getPeerCertificate();
         cleartextStream.end();
-        var cn = certificate['subject']['CN'];
+        var cn = certificate.subject.CN;
         if (typeof cn === 'string' && cn.match(/[a-z]+/i)) {
           self.results.push({ip: host, name: cn, src: 'certificate'});
         }
-        if (typeof certificate['subjectalname'] !== 'undefined') {
-          var subjectNames = certificate['subjectalname'].split(',');
+        if (typeof certificate.subjectaltname !== 'undefined') {
+          var subjectNames = certificate.subjectaltname.split(',');
           process.nextTick(function() {
             subjectNames.forEach(function(sn) {
               var name = sn.substr(sn.indexOf(':') + 1);
