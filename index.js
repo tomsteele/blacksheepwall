@@ -15,6 +15,12 @@ var _ = require('lodash');
 module.exports = blacksheepwall;
 BSW.prototype = {};
 
+function printError(message) {
+  if (process.env.SHOW_BSW_ERRORS !== 'undefined') {
+    winston.error(message);
+  }
+}
+
 function blacksheepwall(options) {
   return new BSW(options);
 }
@@ -37,9 +43,7 @@ BSW.prototype.dictionary = function(callback) {
      var uri = subDomain + '.' + self.domain;
      var d = domain.create();
      d.on('error', function(err) {
-       if (typeof process.env.SHOW_BSW_ERRORS !== 'undefined') {
-         winston.error(err.message);
-       }
+       printError(err.message);
        asyncCallback();
      });
      d.run(function() {
@@ -61,9 +65,7 @@ BSW.prototype.reverse = function(callback) {
   async.eachLimit(self.hosts, self.concurrency, function(host, asyncCallback) {
     var d = domain.create();
     d.on('error', function(err) {
-      if (typeof process.env.SHOW_BSW_ERRORS !== 'undefined') {
-        winston.error(err.message);
-      }
+      printError(err.message);
       asyncCallback();
     });
     d.run(function() {
@@ -91,9 +93,7 @@ BSW.prototype.ssl = function(callback) {
     var asyncCallbackComplete = false;
     var d = domain.create();
     d.on('error', function(err) {
-      if (typeof process.env.SHOW_BSW_ERRORS !== 'undefined') {
-        winston.error(err.message);
-      }
+      printError(err.message);
       // Make sure we only callback once
       if (!asyncCallbackComplete) {
         asyncCallbackComplete = true;
@@ -139,9 +139,7 @@ BSW.prototype.bingApi = function(options, callback) {
     var asyncCallbackComplete = false;
     var d = domain.create();
     d.on('error', function(err) {
-      if (typeof process.env.SHOW_BSW_ERRORS !== 'undefined') {
-        winston.error(err.message);
-      }
+      printError(err.message);
       if (!asyncCallbackComplete) {
         asyncCallbackComplete = true;
         return asyncCallback();
@@ -191,9 +189,7 @@ BSW.prototype.bing = function(callback) {
     var asyncCallbackComplete = false;
     var d = domain.create();
     d.on('error', function(err) {
-      if (typeof process.env.SHOW_BSW_ERRORS !== 'undefined') {
-        winston.error(err.message);
-      }
+      printError(err.message);
       if (!asyncCallbackComplete) {
         asyncCallbackComplete = true;
         return asyncCallback();
@@ -260,9 +256,7 @@ BSW.prototype.headers = function(callback) {
     var asyncCallbackComplete = false;
     var d = domain.create();
     d.on('error', function(err) {
-      if (typeof process.env.SHOW_BSW_ERRORS !== 'undefined') {
-        winston.error(err.message);
-      }
+      printError(err.message);
       if (!asyncCallbackComplete) {
         asyncCallbackComplete = true;
         return asyncCallback();
@@ -333,23 +327,17 @@ BSW.prototype.yandex = function(api, callback) {
   }
   function handleSearch(err, results) {
     if (err) {
-      if (typeof process.env.SHOW_BSW_ERRORS !== 'undefined') {
-        winston.error(err.message);
-      }
+      printError(err.message);
       return callback();
     }
     return xml2js(results, parseXml);
   }
   function parseXml(err, result) {
     if (err) {
-      if (typeof process.env.SHOW_BSW_ERRORS !== 'undefined') {
-        winston.error(err.message);
-      }
+      printError(err.message);
       return callback();
     } else if (result.response.error) {
-      if (typeof process.env.SHOW_BSW_ERRORS !== 'undefined') {
-        winston.error(result.response.error['#']);
-      }
+      printError(err.message);
       return callback();
     } else {
       var pages = result.response.results.grouping.found[0]['#'] / 50;
@@ -368,9 +356,7 @@ BSW.prototype.yandex = function(api, callback) {
     async.eachLimit(_.uniq(domains), self.concurrency, function(fqdn, asyncCallback) {
       var d = domain.create();
       d.on('error', function(err) {
-        if (typeof process.env.SHOW_BSW_ERRORS !== 'undefined') {
-          winston.error(err.message);
-        }
+        printError(err.message);
         return asyncCallback();
       });
       d.run(function() {
@@ -396,9 +382,7 @@ BSW.prototype.fcrdns = function(callback) {
     var asyncCallbackComplete = false;
     var d = domain.create();
     d.on('error', function(err) {
-      if (typeof process.env.SHOW_BSW_ERRORS !== 'undefined') {
-        winston.error(err.message);
-      }
+      printError(err.message);
       if (!asyncCallbackComplete) {
         asyncCallbackComplete = true;
         return asyncCallback();
