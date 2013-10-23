@@ -21,7 +21,6 @@
   "dependencies": {
     "async": "0.2.x",
     "commander": "1.1.x",
-    "underscore": "*",
     "netmask": "*",
     "winston": "~0.7.2",
     "yandex-search": "0.0.1",
