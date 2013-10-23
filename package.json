@@ -23,7 +23,10 @@
     "commander": "1.1.x",
     "underscore": "*",
     "netmask": "*",
-    "winston": "~0.7.2"
+    "winston": "~0.7.2",
+    "yandex-search": "0.0.1",
+    "libxml-to-js": "~0.3.11",
+    "lodash": "~2.2.1"
   },
   "license": "MIT",
   "engines": {
