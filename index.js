@@ -329,7 +329,7 @@ BSW.prototype.yandex = function(api, callback) {
   var domains = [];
   var page = 0;
   function search() {
-    yandex(options, handleSearch);
+    return yandex(options, handleSearch);
   }
   function handleSearch(err, results) {
     if (err) {
@@ -371,15 +371,15 @@ BSW.prototype.yandex = function(api, callback) {
         if (typeof process.env.SHOW_BSW_ERRORS !== 'undefined') {
           winston.error(err.message);
         }
-        asyncCallback();
+        return asyncCallback();
       });
       d.run(function() {
         dns.resolve4(fqdn, function(err, addresses) {
           if (err) {
-            asyncCallback();
+            return asyncCallback();
           } else {
             self.results.push({ip: addresses[0], name: fqdn, src: 'yandex'});
-            asyncCallback();
+            return asyncCallback();
           }
         });
       });
