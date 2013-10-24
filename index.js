@@ -319,9 +319,18 @@ BSW.prototype.yandex = function(api, callback) {
   var self = this;
   var parts = self.domain.split('.');
   var query = 'rhost:' + parts[1] + '.' + parts[0] + '.*';
-  var options = {url: api, query: query};
+  var options = {
+    url: api,
+    query: query,
+    page: 0,
+    maxpassages: 1,
+    groupby: {
+      mode: 'flat',
+      groupsOnPage: 50,
+      docsInGroup: 1
+    }
+  };
   var domains = [];
-  var page = 0;
   function search() {
     return yandex(options, handleSearch);
   }
@@ -344,8 +353,8 @@ BSW.prototype.yandex = function(api, callback) {
       domains = domains.concat(result.response.results.grouping.group.map(function(g) {
         return g.doc.domain;
       }));
-      if (page < pages) {
-        page++;
+      if (options.page < pages) {
+        options.page++;
         return search();
       } else {
         return lookUpDomains();
