@@ -1,7 +1,7 @@
 {
   "name": "blacksheepwall",
   "preferGlobal": true,
-  "version": "0.7.1",
+  "version": "0.8.0",
   "author": "Tom Steele <tom@huptwo34.com>",
   "description": "useful functions for discovering hosts and vhosts",
   "contributors": [
