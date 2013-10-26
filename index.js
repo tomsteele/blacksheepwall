@@ -350,9 +350,14 @@ BSW.prototype.yandex = function(api, callback) {
       return callback();
     } else {
       var pages = result.response.results.grouping.found[0]['#'] / 50;
-      domains = domains.concat(result.response.results.grouping.group.map(function(g) {
-        return g.doc.domain;
-      }));
+      var groups = result.response.results.grouping.group;
+      if (Array.isArray(groups)) {
+        domains = domains.concat(groups.map(function(g) {
+          return g.doc.domain;
+        }));
+      } else {
+        domains.push(groups.doc.domain);
+      }
       // Only grab a maximum number of 50 pages
       if (options.page < pages && options.page <= 50 && pages >= 1) {
         options.page++;
