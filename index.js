@@ -16,7 +16,7 @@ module.exports = blacksheepwall;
 BSW.prototype = {};
 
 function printError(message) {
-  if (process.env.SHOW_BSW_ERRORS !== 'undefined') {
+  if (typeof process.env.SHOW_BSW_ERRORS !== 'undefined') {
     winston.error(message);
   }
 }
