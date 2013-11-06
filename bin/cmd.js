@@ -12,7 +12,7 @@ var netmask = require('netmask');
 var winston = require('winston');
 
 program
-  .version('0.8.1')
+  .version('0.8.2')
   .usage('[options] <ip range>')
   .option('-c, --concurrency <int>', 'limit amount of concurrent requests')
   .option('-d, --dictionary <file>', 'hostname guessing using a one host per line dictionary')
@@ -92,12 +92,12 @@ var tasks = [];
 // Build task list
 if (program.dictionary) {
   tasks.push(function(cb) {
-    // Check for wildcard domain. If this domain exists, stop, this target is too awesome to attack 
+    // Check for wildcard domain. If this domain exists, pass the addresses as a blacklist
     dns.resolve4('youmustconstructadditionalpylons.' + program.target, function (err, addresses) {
       if (addresses) {
-        winston.error('Skipping dictionary lookups for wildcard domain *.' + program.target);
+        b.dictionary(addresses, cb);
       } else {
-        b.dictionary(cb);
+        b.dictionary([], cb);
       }
     });
   });

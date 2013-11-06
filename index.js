@@ -37,7 +37,7 @@ function BSW(options) {
 
 // Loops over self.names looking for the ip of
 // name + self.domain.
-BSW.prototype.dictionary = function(callback) {
+BSW.prototype.dictionary = function(blacklist, callback) {
    var self = this;
    async.eachLimit(self.names, self.concurrency, function(subDomain, asyncCallback) {
      var uri = subDomain + '.' + self.domain;
@@ -51,7 +51,9 @@ BSW.prototype.dictionary = function(callback) {
          if (err) {
            asyncCallback();
          } else {
-           self.results.push({ip: addresses[0], name: uri, src: 'dictionary'});
+           if (blacklist.indexOf(addresses[0]) === -1) {
+             self.results.push({ip: addresses[0], name: uri, src: 'dictionary'});
+           }
            asyncCallback();
          }
        });
