@@ -38,7 +38,7 @@ func hostnameFromHttpLocationHeader(ip string, protocol string) (string, error) 
 		}
 		host := u.Host
 		if m, _ := regexp.Match("[a-zA-Z]+", []byte(host)); m == true {
-			return u.Host, nil
+			return host, nil
 		}
 		return "", nil
 	}
