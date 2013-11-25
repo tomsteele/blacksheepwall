@@ -30,7 +30,7 @@ var usage = `
                         the line separated file.
   -yandex <string>      Provided a Yandex search XML API url. Use the Yandex 
                         search 'rhost:' operator to find subdomains of a 
-			provided domain..
+                        provided domain..
   -bing	<string>        Provided a base64 encoded API key. Use the Bing search
                         API's 'ip:' operator to lookup hostnames for each host.
   -headers              Perform HTTP(s) requests to each host and look for 
