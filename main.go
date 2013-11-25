@@ -49,7 +49,7 @@ var usage = `
 
 `
 
-// Returns all ip addresses from each CIDR range in a list
+// Returns all ip addresses from each CIDR range in a list.
 func linesToIpList(lines []string) ([]string, error) {
 	ipList := make([]string, 0)
 	for _, line := range lines {
@@ -66,7 +66,7 @@ func linesToIpList(lines []string) ([]string, error) {
 	return ipList, nil
 }
 
-// Increases each byte of a net.IP
+// Increases each byte of a net.IP.
 func increaseIp(ip net.IP) {
 	for j := len(ip) - 1; j >= 0; j-- {
 		ip[j]++
@@ -76,7 +76,7 @@ func increaseIp(ip net.IP) {
 	}
 }
 
-// Reads lines from a file and returns as a slice
+// Reads lines from a file and returns as a slice.
 func readFileLines(path string) ([]string, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -91,7 +91,7 @@ func readFileLines(path string) ([]string, error) {
 	return lines, scanner.Err()
 }
 
-// Sets the max CPUS for the runtime
+// Sets the max CPUS for the runtime.
 func setMaxProcs(cpus int) {
 	if cpus < 1 {
 		log.Fatal("-cpus must be atleast 1")
@@ -181,10 +181,10 @@ func main() {
 	}
 
 	// tracker: Chanel uses an empty struct to track when all goroutines in the pool
-	//          have completed as well as a single call from the gather res.
+	//          have completed as well as a single call from the gatherer.
 	//
 	// tasks:   Chanel used in the goroutine pool to manage incoming work. A task is
-	//          a function wrapper that returns a slice of results and an error.
+	//          a function wrapper that returns a slice of results and a possible error.
 	//
 	// res:     When each task is called in the pool, it will send valid results to
 	//          the res channel. A goroutine manages this channel and appends results
@@ -220,7 +220,7 @@ func main() {
 		}()
 	}
 
-	// Injest incoming results slices
+	// Ingest incoming results
 	go func() {
 		for result := range res {
 			if len(result) < 1 {
@@ -286,7 +286,8 @@ func main() {
 
 	}
 
-	// Domain based functions will likely require separate blocks for each
+	// Domain based functions will likely require separate blocks
+
 	// Subdomain dictionary guessing
 	if *flDictFile != "" && *flDomain != "" {
 		nameList, err := readFileLines(*flDictFile)
@@ -318,8 +319,8 @@ func main() {
 		}
 	}
 
-	// Close the tasks channel after all jobs have completed and for
-	// goroutine in the pool receive an empty message to the tracker
+	// Close the tasks channel after all jobs have completed and for each
+	// goroutine in the pool receive an empty message from  tracker.
 	close(tasks)
 	for i := 0; i < *flConcurrency; i++ {
 		<-tracker
