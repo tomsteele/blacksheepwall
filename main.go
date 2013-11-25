@@ -49,7 +49,7 @@ var usage = `
 
 `
 
-// Returned all ip addresses from each CIDR range in a list
+// Returns all ip addresses from each CIDR range in a list
 func linesToIpList(lines []string) ([]string, error) {
 	ipList := make([]string, 0)
 	for _, line := range lines {
