@@ -49,6 +49,7 @@ var usage = `
 
 `
 
+// Returned all ip addresses from each CIDR range in a list
 func linesToIpList(lines []string) ([]string, error) {
 	ipList := make([]string, 0)
 	for _, line := range lines {
@@ -65,6 +66,7 @@ func linesToIpList(lines []string) ([]string, error) {
 	return ipList, nil
 }
 
+// Increases each byte of a net.IP
 func increaseIp(ip net.IP) {
 	for j := len(ip) - 1; j >= 0; j-- {
 		ip[j]++
@@ -74,6 +76,7 @@ func increaseIp(ip net.IP) {
 	}
 }
 
+// Reads lines from a file and returns as a slice
 func readFileLines(path string) ([]string, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -88,6 +91,7 @@ func readFileLines(path string) ([]string, error) {
 	return lines, scanner.Err()
 }
 
+// Sets the max CPUS for the runtime
 func setMaxProcs(cpus int) {
 	if cpus < 1 {
 		log.Fatal("-cpus must be atleast 1")
@@ -102,25 +106,25 @@ type task func() ([]bsw.Result, error)
 type empty struct{}
 
 func main() {
-	var flVersion = flag.Bool("version", false, "Show version and exit.")
-	var flConcurrency = flag.Int("concurrency", 100, "Max amount of concurrent tasks.")
-	var flCpus = flag.Int("cpus", runtime.NumCPU(), "Max amount of cpus  for the go runtime.")
-	var flDebug = flag.Bool("debug", false, "Enable debugging and show errors returned from tasks.")
-	var flipv6 = flag.Bool("ipv6", false, "Look for AAAA records where applicable.")
-	var flServerAddr = flag.String("server", "8.8.8.8", "DNS server address.")
-	var flIpFile = flag.String("input", "", "Line separated file of networks (CIDR) or IP Addresses.")
-	var flReverse = flag.Bool("reverse", false, "Retrieve the PTR for each host.")
-	var flHeader = flag.Bool("headers", false, "Perform HTTP(s) requests to each host and look for hostnames in a possible Location header.")
-	var flTLS = flag.Bool("tls", false, "Attempt to retrieve names from TLS certificates (CommonName and Subject Alternative Name).")
-	var flViewDnsInfo = flag.Bool("viewdns", false, "Lookup each host using viewdns.info's Reverse IP Lookup function.")
-	var flBing = flag.String("bing", "", "Provided a base64 encoded API key. Use the Bing search API's 'ip:' operator to lookup hostnames for each host.")
-	var flYandex = flag.String("yandex", "", "Provided a Yandex search XML API url. Use the Yandex search 'rhost:' operator to find subdomains of a provided domain.")
-	var flDomain = flag.String("domain", "", "Target domain to use for certain tasks.")
-	var flDictFile = flag.String("dictionary", "", "Attempt to retrieve the CNAME and A record for each subdomain in the line separated file.")
-	var flFcrdns = flag.Bool("fcrdns", false, "Verify results by attempting to retrieve the A or AAAA record for each result previously identified hostname.")
-	var flClean = flag.Bool("clean", false, "Print results as unique hostnames for each host.")
-	var flCsv = flag.Bool("csv", false, "Print results in csv format.")
-	var flJson = flag.Bool("json", false, "Print results as JSON.")
+	flVersion := flag.Bool("version", false, "Show version and exit.")
+	flConcurrency := flag.Int("concurrency", 100, "Max amount of concurrent tasks.")
+	flCpus := flag.Int("cpus", runtime.NumCPU(), "Max amount of cpus  for the go runtime.")
+	flDebug := flag.Bool("debug", false, "Enable debugging and show errors returned from tasks.")
+	flipv6 := flag.Bool("ipv6", false, "Look for AAAA records where applicable.")
+	flServerAddr := flag.String("server", "8.8.8.8", "DNS server address.")
+	flIpFile := flag.String("input", "", "Line separated file of networks (CIDR) or IP Addresses.")
+	flReverse := flag.Bool("reverse", false, "Retrieve the PTR for each host.")
+	flHeader := flag.Bool("headers", false, "Perform HTTP(s) requests to each host and look for hostnames in a possible Location header.")
+	flTLS := flag.Bool("tls", false, "Attempt to retrieve names from TLS certificates (CommonName and Subject Alternative Name).")
+	flViewDnsInfo := flag.Bool("viewdns", false, "Lookup each host using viewdns.info's Reverse IP Lookup function.")
+	flBing := flag.String("bing", "", "Provided a base64 encoded API key. Use the Bing search API's 'ip:' operator to lookup hostnames for each host.")
+	flYandex := flag.String("yandex", "", "Provided a Yandex search XML API url. Use the Yandex search 'rhost:' operator to find subdomains of a provided domain.")
+	flDomain := flag.String("domain", "", "Target domain to use for certain tasks.")
+	flDictFile := flag.String("dictionary", "", "Attempt to retrieve the CNAME and A record for each subdomain in the line separated file.")
+	flFcrdns := flag.Bool("fcrdns", false, "Verify results by attempting to retrieve the A or AAAA record for each result previously identified hostname.")
+	flClean := flag.Bool("clean", false, "Print results as unique hostnames for each host.")
+	flCsv := flag.Bool("csv", false, "Print results in csv format.")
+	flJson := flag.Bool("json", false, "Print results as JSON.")
 	flag.Usage = func() { fmt.Print(usage) }
 	flag.Parse()
 
@@ -131,8 +135,13 @@ func main() {
 
 	setMaxProcs(*flCpus)
 
+	// Holds all ip addresses for testing
 	ipAddrList := make([]string, 0)
-	var flNetwork = ""
+
+	// Used to hold a ip or CIDR range passed as fl.Arg(0)
+	var flNetwork string
+
+	// Verify that some sort of work load was given in commands
 	if *flIpFile == "" && *flDomain == "" && len(flag.Args()) < 1 {
 		log.Fatal("You didn't provide any work for me to do")
 	}
@@ -145,6 +154,8 @@ func main() {
 	if *flDomain != "" && *flYandex == "" && *flDictFile == "" {
 		log.Fatal("-domain provided but no methods provided that use it")
 	}
+
+	// Get first argument that is not an option and turn it into a list of ips
 	if len(flag.Args()) > 0 {
 		flNetwork = flag.Arg(0)
 		list, err := linesToIpList([]string{flNetwork})
@@ -153,6 +164,10 @@ func main() {
 		}
 		ipAddrList = append(ipAddrList, list...)
 	}
+
+	// If file given as -input, read lines and turn each possible ip or network into
+	// a list of ips. Appends list to ipAddrList. Will fail fatally if line in file
+	// is not a valid ip or CIDR range.
 	if *flIpFile != "" {
 		lines, err := readFileLines(*flIpFile)
 		if err != nil {
@@ -164,9 +179,22 @@ func main() {
 		}
 		ipAddrList = append(ipAddrList, list...)
 	}
+
+	// tracker: Chanel uses an empty struct to track when all goroutines in the pool
+	//          have completed as well as a single call from the gather res.
+	//
+	// tasks:   Chanel used in the goroutine pool to manage incoming work. A task is
+	//          a function wrapper that returns a slice of results and an error.
+	//
+	// res:     When each task is called in the pool, it will send valid results to
+	//          the res channel. A goroutine manages this channel and appends results
+	//          to results slice.
 	tracker := make(chan empty)
-	res := make(chan []bsw.Result)
 	tasks := make(chan task)
+	res := make(chan []bsw.Result)
+	results := make([]bsw.Result, 0)
+
+	// Start up *flConcurrency amount of goroutines
 	log.Printf("Spreading tasks across %d goroutines", *flConcurrency)
 	for i := 0; i < *flConcurrency; i++ {
 		go func() {
@@ -192,7 +220,7 @@ func main() {
 		}()
 	}
 
-	results := make([]bsw.Result, 0)
+	// Injest incoming results slices
 	go func() {
 		for result := range res {
 			if len(result) < 1 {
@@ -217,6 +245,7 @@ func main() {
 		tracker <- e
 	}()
 
+	// Bing has two possible search paths. We need to find which one is valid.
 	var bingPath string
 	if *flBing != "" {
 		p, err := bsw.FindBingSearchPath(*flBing)
@@ -226,6 +255,7 @@ func main() {
 		bingPath = p
 	}
 
+	// ip based functionality should be added to the pool here
 	for _, h := range ipAddrList {
 		host := h
 		if *flReverse {
@@ -256,13 +286,16 @@ func main() {
 
 	}
 
+	// Domain based functions will likely require separate blocks for each
+	// Subdomain dictionary guessing
 	if *flDictFile != "" && *flDomain != "" {
 		nameList, err := readFileLines(*flDictFile)
 		if err != nil {
 			log.Fatal("Error reading " + *flDictFile + " " + err.Error())
 		}
+		// Get an ip for a possible wildcard domain and use it as a blacklist
 		blacklist := bsw.GetWildCard(*flDomain, *flServerAddr)
-		var blacklist6 = ""
+		var blacklist6 string
 		if *flipv6 {
 			blacklist6 = bsw.GetWildCard6(*flDomain, *flServerAddr)
 		}
@@ -285,17 +318,20 @@ func main() {
 		}
 	}
 
+	// Close the tasks channel after all jobs have completed and for
+	// goroutine in the pool receive an empty message to the tracker
 	close(tasks)
 	for i := 0; i < *flConcurrency; i++ {
 		<-tracker
 	}
 	close(res)
+	// Receive and empty message from the result gatherer
 	<-tracker
 
 	os.Stderr.WriteString("\r")
-	log.Println("All tasks completed")
-	fmt.Println()
+	log.Println("All tasks completed\n")
 
+	// Output options
 	if *flJson {
 		j, _ := json.MarshalIndent(results, "", "    ")
 		fmt.Println(string(j))
