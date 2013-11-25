@@ -42,16 +42,29 @@ func GetWildCard6(domain string, serverAddr string) string {
 }
 
 func Dictionary(domain string, subname string, blacklist string, serverAddr string) ([]Result, error) {
-	results := make([]Result, 1)
+	results := make([]Result, 0)
 	var fqdn = subname + "." + domain
 	ip, err := LookupName(fqdn, serverAddr)
 	if err != nil {
-		return results, err
+		cfqdn, err := LookupCname(fqdn, serverAddr)
+		if err != nil {
+			return results, err
+		}
+		ip, err = LookupName(cfqdn, serverAddr)
+		if err != nil {
+			return results, err
+		}
+		if ip == blacklist {
+			return results, errors.New("Returned IP in blackslist")
+		}
+		results = append(results, Result{Source: "Dictionary-CNAME", IPAddress: ip, Hostname: fqdn})
+		results = append(results, Result{Source: "Dictionary-CNAME", IPAddress: ip, Hostname: cfqdn})
+		return results, nil
 	}
 	if ip == blacklist {
 		return results, errors.New("Returned IP in blacklist")
 	}
-	results[0] = Result{Source: "Dictionary", IPAddress: ip, Hostname: fqdn}
+	results = append(results, Result{Source: "Dictionary", IPAddress: ip, Hostname: fqdn})
 	return results, nil
 }
 

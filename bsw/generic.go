@@ -30,7 +30,7 @@ func LookupIP(ip string, serverAddr string) (string, error) {
 func LookupName(fqdn string, serverAddr string) (string, error) {
 	m := new(dns.Msg)
 	m.SetQuestion(dns.Fqdn(fqdn), dns.TypeA)
-	in, err := dns.Exchange(m, serverAddr+":53")
+	in, err := dns.Exchange(m, serverAddr + ":53")
 	if err != nil {
 		return "", err
 	}
@@ -42,6 +42,24 @@ func LookupName(fqdn string, serverAddr string) (string, error) {
 		return ip, nil
 	} else {
 		return "", errors.New("No A record returned")
+	}
+}
+
+func LookupCname(fqdn string, serverAddr string) (string, error) {
+	m := new(dns.Msg)
+	m.SetQuestion(dns.Fqdn(fqdn), dns.TypeCNAME)
+	in, err := dns.Exchange(m, serverAddr +  ":53")
+	if err != nil {
+		return "", err
+	}
+	if len(in.Answer) < 1 {
+		return "", err
+	}
+	if a, ok := in.Answer[0].(*dns.CNAME); ok {
+		name := a.Target
+		return strings.TrimRight(name, "."), nil
+	} else {
+		return "", errors.New("No CNAME record returned")
 	}
 }
 
