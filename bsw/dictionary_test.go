@@ -13,7 +13,7 @@ func TestWildCard(t *testing.T) {
 
 func testDictionary(t *testing.T) {
 	results, _ := Dictionary("huptwo34.com", "www", "", "8.8.8.8")
-	if results[0].IPAddress != "209.147.121.178" {
+	if results[0].IP != "209.147.121.178" {
 		t.Error("Dictionary returned incorrect or non-existent IP Address")
 	}
 	if results[0].Hostname != "www.huptwo34.com" {

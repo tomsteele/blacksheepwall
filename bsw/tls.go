@@ -21,9 +21,9 @@ func TLS(ip string) ([]Result, error) {
 	state := conn.ConnectionState()
 	for _, cert := range state.PeerCertificates {
 		// TODO: Regex to detect if Subject name is a hostname
-		results = append(results, Result{Source: "TLS Certificate", IPAddress: ip, Hostname: cert.Subject.CommonName})
+		results = append(results, Result{Source: "TLS Certificate", IP: ip, Hostname: cert.Subject.CommonName})
 		for _, name := range cert.DNSNames {
-			results = append(results, Result{Source: "TLS Certificate", IPAddress: ip, Hostname: name})
+			results = append(results, Result{Source: "TLS Certificate", IP: ip, Hostname: name})
 		}
 	}
 	return results, nil

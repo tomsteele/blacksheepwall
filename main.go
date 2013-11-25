@@ -177,7 +177,7 @@ func main() {
 					os.Stderr.WriteString("\rWorking /")
 				}
 				if err != nil {
-
+					//TODO: Show errors based on environment variable or debug flag
 				} else {
 					res <- result
 				}
@@ -198,11 +198,11 @@ func main() {
 				for _, r := range result {
 					ip, err := bsw.LookupName(r.Hostname, *flServerAddr)
 					if err == nil && len(ip) > 0 {
-						results = append(results, bsw.Result{Source: "fcrdns", IPAddress: ip, Hostname: r.Hostname})
+						results = append(results, bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname})
 					}
 					ip, err = bsw.LookupName6(r.Hostname, *flServerAddr)
 					if err == nil && len(ip) > 0 {
-						results = append(results, bsw.Result{Source: "fcrdns", IPAddress: ip, Hostname: r.Hostname})
+						results = append(results, bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname})
 					}
 				}
 			} else {
@@ -297,12 +297,12 @@ func main() {
 		fmt.Println(string(j))
 	} else if *flCsv {
 		for _, r := range results {
-			fmt.Printf("%s,%s,%s\n", r.Hostname, r.IPAddress, r.Source)
+			fmt.Printf("%s,%s,%s\n", r.Hostname, r.IP, r.Source)
 		}
 	} else if *flClean {
 		cleanSet := make(map[string][]string)
 		for _, r := range results {
-			cleanSet[r.Hostname] = append(cleanSet[r.Hostname], r.IPAddress)
+			cleanSet[r.Hostname] = append(cleanSet[r.Hostname], r.IP)
 		}
 		for k, v := range cleanSet {
 			fmt.Printf("%s:\n", k)
@@ -312,7 +312,7 @@ func main() {
 		}
 	} else {
 		for _, r := range results {
-			fmt.Printf("Hostname: %s IPAddress: %s Source: %s\n", r.Hostname, r.IPAddress, r.Source)
+			fmt.Printf("Hostname: %s IP: %s Source: %s\n", r.Hostname, r.IP, r.Source)
 		}
 	}
 }

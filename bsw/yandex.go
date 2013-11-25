@@ -42,7 +42,7 @@ func YandexAPI(domain string, apiUrl string, serverAddr string) ([]Result, error
 			domainSet[domain] = true
 			ip, err := LookupName(domain, serverAddr)
 			if err == nil {
-				results = append(results, Result{Source: "Yandex API", IPAddress: ip, Hostname: domain})
+				results = append(results, Result{Source: "Yandex API", IP: ip, Hostname: domain})
 			}
 		}
 	}

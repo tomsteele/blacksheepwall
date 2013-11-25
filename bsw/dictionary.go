@@ -57,14 +57,14 @@ func Dictionary(domain string, subname string, blacklist string, serverAddr stri
 		if ip == blacklist {
 			return results, errors.New("Returned IP in blackslist")
 		}
-		results = append(results, Result{Source: "Dictionary-CNAME", IPAddress: ip, Hostname: fqdn})
-		results = append(results, Result{Source: "Dictionary-CNAME", IPAddress: ip, Hostname: cfqdn})
+		results = append(results, Result{Source: "Dictionary-CNAME", IP: ip, Hostname: fqdn})
+		results = append(results, Result{Source: "Dictionary-CNAME", IP: ip, Hostname: cfqdn})
 		return results, nil
 	}
 	if ip == blacklist {
 		return results, errors.New("Returned IP in blacklist")
 	}
-	results = append(results, Result{Source: "Dictionary", IPAddress: ip, Hostname: fqdn})
+	results = append(results, Result{Source: "Dictionary", IP: ip, Hostname: fqdn})
 	return results, nil
 }
 
@@ -78,6 +78,6 @@ func Dictionary6(domain string, subname string, blacklist string, serverAddr str
 	if ip == blacklist {
 		return results, errors.New("Returned IP in blacklist")
 	}
-	results[0] = Result{Source: "Dictionary IPv6", IPAddress: ip, Hostname: fqdn}
+	results[0] = Result{Source: "Dictionary IPv6", IP: ip, Hostname: fqdn}
 	return results, nil
 }

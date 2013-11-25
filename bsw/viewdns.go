@@ -28,7 +28,7 @@ func ViewDnsInfo(ip string) ([]Result, error) {
 		return results, err
 	}
 	for _, node := range nodes {
-		results = append(results, Result{Source: "viewdns.info", IPAddress: ip, Hostname: node.InnerHtml()})
+		results = append(results, Result{Source: "viewdns.info", IP: ip, Hostname: node.InnerHtml()})
 	}
 	return results, nil
 }

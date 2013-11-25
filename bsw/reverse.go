@@ -6,6 +6,6 @@ func Reverse(ip string, serverAddr string) ([]Result, error) {
 	if err != nil {
 		return results, err
 	}
-	results[0] = Result{Source: "Reverse", IPAddress: ip, Hostname: hostname}
+	results[0] = Result{Source: "Reverse", IP: ip, Hostname: hostname}
 	return results, nil
 }

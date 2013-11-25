@@ -81,7 +81,7 @@ func BingAPI(ip string, key string, path string) ([]Result, error) {
 	for _, res := range m.D.Results {
 		u, err := url.Parse(res.Url)
 		if err == nil {
-			results = append(results, Result{Source: "Bing API", IPAddress: ip, Hostname: u.Host})
+			results = append(results, Result{Source: "Bing API", IP: ip, Hostname: u.Host})
 		}
 	}
 	return results, nil

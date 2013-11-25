@@ -11,11 +11,11 @@ func Headers(ip string) ([]Result, error) {
 	results := make([]Result, 0, 2)
 	host, _ := hostnameFromHttpLocationHeader(ip, "http")
 	if host != "" {
-		results = append(results, Result{Source: "Headers", IPAddress: ip, Hostname: host})
+		results = append(results, Result{Source: "Headers", IP: ip, Hostname: host})
 	}
 	host, _ = hostnameFromHttpLocationHeader(ip, "https")
 	if host != "" {
-		results = append(results, Result{Source: "Headers", IPAddress: ip, Hostname: host})
+		results = append(results, Result{Source: "Headers", IP: ip, Hostname: host})
 	}
 	return results, nil
 }
