@@ -19,6 +19,7 @@ var usage = `
   Options:
   -h, --help            Show Usage and exit.
   -version              Show version and exit.
+  -debug                Enable debugging and show errors returned from tasks.
   -concurrency <int>    Max amount of concurrent tasks.
   -cpus <int>           Max amount of cpus  for the go runtime.
   -server <string>      DNS server address.
@@ -104,6 +105,7 @@ func main() {
 	var flVersion = flag.Bool("version", false, "Show version and exit.")
 	var flConcurrency = flag.Int("concurrency", 100, "Max amount of concurrent tasks.")
 	var flCpus = flag.Int("cpus", runtime.NumCPU(), "Max amount of cpus  for the go runtime.")
+	var flDebug = flag.Bool("debug", false, "Enable debugging and show errors returned from tasks.")
 	var flipv6 = flag.Bool("ipv6", false, "Look for AAAA records where applicable.")
 	var flServerAddr = flag.String("server", "8.8.8.8", "DNS server address.")
 	var flIpFile = flag.String("input", "", "Line separated file of networks (CIDR) or IP Addresses.")
@@ -172,16 +174,18 @@ func main() {
 			for def := range tasks {
 				result, err := def()
 				if m := c % 2; m == 0 {
+					c = 3
 					os.Stderr.WriteString("\rWorking \\")
 				} else {
+					c = 2
 					os.Stderr.WriteString("\rWorking /")
 				}
-				if err != nil {
-					//TODO: Show errors based on environment variable or debug flag
-				} else {
+				if err != nil && *flDebug {
+					log.Println(err.Error())
+				}
+				if err == nil {
 					res <- result
 				}
-				c++
 			}
 			e := empty{}
 			tracker <- e
