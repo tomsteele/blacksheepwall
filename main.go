@@ -58,7 +58,7 @@ func linesToIpList(lines []string) ([]string, error) {
 				ipList = append(ipList, ip.String())
 			}
 		} else {
-			return ipList, errors.New(line + "\" is not an IP Address or CIDR Network")
+			return ipList, errors.New("\"" + line + "\" is not an IP Address or CIDR Network")
 		}
 	}
 	return ipList, nil
