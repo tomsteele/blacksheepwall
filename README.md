@@ -17,8 +17,8 @@ blacksheepwall is a hostname reconnaissance tool written in Go.
                         IP Addresses.
   -ipv6	                Look for additional AAAA records where applicable.
   -domain <string>      Target domain to use for certain tasks.
-  -dictionary <string>  Attempt to retrieve an A record for each subdomain in
-                        the line separated file.
+  -dictionary <string>  Attempt to retrieve the CNAME and A record for
+                        each subdomain in the line separated file.
   -yandex <string>      Provided a Yandex search XML API url. Use the Yandex
                         search 'rhost:' operator to find subdomains of a
                         provided domain..

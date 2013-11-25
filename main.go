@@ -26,8 +26,8 @@ var usage = `
                         IP Addresses.
   -ipv6	                Look for additional AAAA records where applicable.
   -domain <string>      Target domain to use for certain tasks.
-  -dictionary <string>  Attempt to retrieve an A record for each subdomain in
-                        the line separated file.
+  -dictionary <string>  Attempt to retrieve the CNAME and A record for
+                        each subdomain in the line separated file.
   -yandex <string>      Provided a Yandex search XML API url. Use the Yandex 
                         search 'rhost:' operator to find subdomains of a 
                         provided domain..
@@ -114,7 +114,7 @@ func main() {
 	var flBing = flag.String("bing", "", "Provided a base64 encoded API key. Use the Bing search API's 'ip:' operator to lookup hostnames for each host.")
 	var flYandex = flag.String("yandex", "", "Provided a Yandex search XML API url. Use the Yandex search 'rhost:' operator to find subdomains of a provided domain..")
 	var flDomain = flag.String("domain", "", "Target domain to use for certain tasks.")
-	var flDictFile = flag.String("dictionary", "", "Attempt to retrieve an A record for each subdomain in the line separated file.")
+	var flDictFile = flag.String("dictionary", "", "Attempt to retrieve the CNAME and A record for each subdomain in the line separated file.")
 	var flFcrdns = flag.Bool("fcrdns", false, "Verify results by attempting to retrieve an A record for each result previously identified.")
 	var flClean = flag.Bool("clean", false, "Print results as unique hostnames for each host.")
 	var flCsv = flag.Bool("csv", false, "Print results in csv format.")
