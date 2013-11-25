@@ -1,6 +1,0 @@
-*.sqp
-*.swp
-node_modules/*
-.DS_Store
-.idea/
-.git
