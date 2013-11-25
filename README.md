@@ -32,8 +32,8 @@ blacksheepwall is a hostname reconnaissance tool written in Go.
                         (CommonName and Subject Alternative Name).
   -viewdns              Lookup each host using viewdns.info's Reverse IP
                         Lookup function.
-  -fcrdns               Verify results by attempting to retrieve an A record for
-                        each result previously identified.
+  -fcrdns               Verify results by attempting to retrieve the A or AAAA record for
+                        each result previously identified hostname.
   -clean                Print results as unique hostnames for each host.
   -csv                  Print results in csv format.
   -json                 Print results as JSON.

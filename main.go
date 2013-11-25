@@ -41,8 +41,8 @@ var usage = `
                         (CommonName and Subject Alternative Name).
   -viewdns              Lookup each host using viewdns.info's Reverse IP
                         Lookup function.
-  -fcrdns               Verify results by attempting to retrieve an A record for
-                        each result previously identified.
+  -fcrdns               Verify results by attempting to retrieve the A or AAAA record for
+                        each result previously identified hostname.
   -clean                Print results as unique hostnames for each host.
   -csv                  Print results in csv format.
   -json                 Print results as JSON.
@@ -117,7 +117,7 @@ func main() {
 	var flYandex = flag.String("yandex", "", "Provided a Yandex search XML API url. Use the Yandex search 'rhost:' operator to find subdomains of a provided domain..")
 	var flDomain = flag.String("domain", "", "Target domain to use for certain tasks.")
 	var flDictFile = flag.String("dictionary", "", "Attempt to retrieve the CNAME and A record for each subdomain in the line separated file.")
-	var flFcrdns = flag.Bool("fcrdns", false, "Verify results by attempting to retrieve an A record for each result previously identified.")
+	var flFcrdns = flag.Bool("fcrdns", false, "Verify results by attempting to retrieve the A or AAAA record for each result previously identified hostname.")
 	var flClean = flag.Bool("clean", false, "Print results as unique hostnames for each host.")
 	var flCsv = flag.Bool("csv", false, "Print results in csv format.")
 	var flJson = flag.Bool("json", false, "Print results as JSON.")
