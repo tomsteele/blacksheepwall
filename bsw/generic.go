@@ -35,7 +35,7 @@ func LookupName(fqdn string, serverAddr string) (string, error) {
 		return "", err
 	}
 	if len(in.Answer) < 1 {
-		return "", err
+		return "", errors.New("No Answer")
 	}
 	if a, ok := in.Answer[0].(*dns.A); ok {
 		ip := a.A.String()
@@ -53,7 +53,7 @@ func LookupCname(fqdn string, serverAddr string) (string, error) {
 		return "", err
 	}
 	if len(in.Answer) < 1 {
-		return "", err
+		return "", errors.New("No Answer")
 	}
 	if a, ok := in.Answer[0].(*dns.CNAME); ok {
 		name := a.Target
@@ -71,7 +71,7 @@ func LookupName6(fqdn string, serverAddr string) (string, error) {
 		return "", err
 	}
 	if len(in.Answer) < 1 {
-		return "", err
+		return "", errors.New("No Answer")
 	}
 	if a, ok := in.Answer[0].(*dns.AAAA); ok {
 		ip := a.AAAA.String()
