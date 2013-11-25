@@ -18,7 +18,7 @@ func ViewDnsInfo(ip string) ([]Result, error) {
 	if err != nil {
 		return results, err
 	}
-	doc, err := gokogiri.ParseHtml(body) //[]byte(body))
+	doc, err := gokogiri.ParseHtml(body)
 	defer doc.Free()
 	if err != nil {
 		return results, err
