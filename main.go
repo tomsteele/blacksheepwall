@@ -6,11 +6,13 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"sort"
 	"github.com/tomsteele/blacksheepwall/bsw"
 	"log"
 	"net"
 	"os"
 	"runtime"
+	"text/tabwriter"
 )
 
 var usage = `
@@ -192,7 +194,7 @@ func main() {
 	tracker := make(chan empty)
 	tasks := make(chan task, *flConcurrency)
 	res := make(chan []bsw.Result, *flConcurrency)
-	results := make([]bsw.Result, 0)
+	results := bsw.Results{}
 
 	// Start up *flConcurrency amount of goroutines
 	log.Printf("Spreading tasks across %d goroutines", *flConcurrency)
@@ -331,6 +333,7 @@ func main() {
 
 	os.Stderr.WriteString("\r")
 	log.Println("All tasks completed\n")
+	sort.Sort(results)
 
 	// Output options
 	if *flJson {
@@ -352,8 +355,11 @@ func main() {
 			}
 		}
 	} else {
+		w := tabwriter.NewWriter(os.Stdout, 0, 8, 4, ' ', 0)
+		fmt.Fprintln(w, "IP\tHostname\tSource")
 		for _, r := range results {
-			fmt.Printf("Hostname: %s IP: %s Source: %s\n", r.Hostname, r.IP, r.Source)
+			fmt.Fprintf(w, "%s\t%s\t%s\n", r.IP, r.Hostname, r.Source)
 		}
+		w.Flush()
 	}
 }
