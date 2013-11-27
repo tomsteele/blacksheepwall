@@ -223,8 +223,7 @@ func main() {
 					res <- result
 				}
 			}
-			e := empty{}
-			tracker <- e
+			tracker <- empty{}
 		}()
 	}
 
