@@ -25,7 +25,7 @@ func hostnameFromHttpLocationHeader(ip string, protocol string) (string, error) 
 	if err != nil {
 		return "", err
 	}
-	tr := http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
+	tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
 	res, err := tr.RoundTrip(req)
 	if err != nil {
 		return "", err
