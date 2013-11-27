@@ -1,7 +1,7 @@
 package bsw
 
 type Result struct {
-	Source   string
-	IP       string
-	Hostname string
+	Source   string `json:"src"`
+	IP       string `json:"ip"`
+	Hostname string `json:"hostname"`
 }
