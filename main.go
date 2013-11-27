@@ -190,8 +190,8 @@ func main() {
 	//          the res channel. A goroutine manages this channel and appends results
 	//          to results slice.
 	tracker := make(chan empty)
-	tasks := make(chan task)
-	res := make(chan []bsw.Result)
+	tasks := make(chan task, *flConcurrency)
+	res := make(chan []bsw.Result, *flConcurrency)
 	results := make([]bsw.Result, 0)
 
 	// Start up *flConcurrency amount of goroutines
