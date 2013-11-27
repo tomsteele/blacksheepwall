@@ -230,8 +230,7 @@ func main() {
 				results = append(results, result...)
 			}
 		}
-		e := empty{}
-		tracker <- e
+		tracker <- empty{}
 	}()
 
 	// Bing has two possible search paths. We need to find which one is valid.
