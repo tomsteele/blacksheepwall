@@ -66,7 +66,7 @@ func linesToIpList(lines []string) ([]string, error) {
 	return ipList, nil
 }
 
-// Increases each byte of a net.IP.
+// Increases IP by a single address
 func increaseIp(ip net.IP) {
 	for j := len(ip) - 1; j >= 0; j-- {
 		ip[j]++
