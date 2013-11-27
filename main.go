@@ -108,7 +108,7 @@ func setMaxProcs(cpus int) {
 	return
 }
 
-type task func() ([]bsw.Result, error)
+type task func() (bsw.Results, error)
 type empty struct{}
 
 func main() {
@@ -197,7 +197,7 @@ func main() {
 	//          to results slice.
 	tracker := make(chan empty)
 	tasks := make(chan task, *flConcurrency)
-	res := make(chan []bsw.Result, *flConcurrency)
+	res := make(chan bsw.Results, *flConcurrency)
 	results := bsw.Results{}
 
 	// Start up *flConcurrency amount of goroutines
@@ -265,27 +265,27 @@ func main() {
 	for _, h := range ipAddrList {
 		host := h
 		if *flReverse {
-			tasks <- func() ([]bsw.Result, error) {
+			tasks <- func() (bsw.Results, error) {
 				return bsw.Reverse(host, *flServerAddr)
 			}
 		}
 		if *flTLS {
-			tasks <- func() ([]bsw.Result, error) {
+			tasks <- func() (bsw.Results, error) {
 				return bsw.TLS(host)
 			}
 		}
 		if *flViewDnsInfo {
-			tasks <- func() ([]bsw.Result, error) {
+			tasks <- func() (bsw.Results, error) {
 				return bsw.ViewDnsInfo(host)
 			}
 		}
 		if *flBing != "" && bingPath != "" {
-			tasks <- func() ([]bsw.Result, error) {
+			tasks <- func() (bsw.Results, error) {
 				return bsw.BingAPI(host, *flBing, bingPath)
 			}
 		}
 		if *flHeader {
-			tasks <- func() ([]bsw.Result, error) {
+			tasks <- func() (bsw.Results, error) {
 				return bsw.Headers(host)
 			}
 		}
@@ -308,11 +308,11 @@ func main() {
 		}
 		for _, n := range nameList {
 			sub := n
-			tasks <- func() ([]bsw.Result, error) {
+			tasks <- func() (bsw.Results, error) {
 				return bsw.Dictionary(*flDomain, sub, blacklist, *flServerAddr)
 			}
 			if *flipv6 {
-				tasks <- func() ([]bsw.Result, error) {
+				tasks <- func() (bsw.Results, error) {
 					return bsw.Dictionary6(*flDomain, sub, blacklist6, *flServerAddr)
 				}
 			}
@@ -320,7 +320,7 @@ func main() {
 	}
 
 	if *flYandex != "" && *flDomain != "" {
-		tasks <- func() ([]bsw.Result, error) {
+		tasks <- func() (bsw.Results, error) {
 			return bsw.YandexAPI(*flDomain, *flYandex, *flServerAddr)
 		}
 	}

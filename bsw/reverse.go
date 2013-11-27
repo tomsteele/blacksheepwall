@@ -1,11 +1,11 @@
 package bsw
 
-func Reverse(ip, serverAddr string) ([]Result, error) {
-	results := make([]Result, 1)
+func Reverse(ip, serverAddr string) (Results, error) {
+	results := Results{}
 	hostname, err := LookupIP(ip, serverAddr)
 	if err != nil {
 		return results, err
 	}
-	results[0] = Result{Source: "Reverse", IP: ip, Hostname: hostname}
+	results = append(results, Result{Source: "Reverse", IP: ip, Hostname: hostname})
 	return results, nil
 }

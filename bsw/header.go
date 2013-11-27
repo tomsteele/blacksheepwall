@@ -7,7 +7,7 @@ import (
 	"regexp"
 )
 
-func Headers(ip string) ([]Result, error) {
+func Headers(ip string) (Results, error) {
 	results := []Result{}
 	for _, proto := range []string{"http", "https"} {
 		if host := hostnameFromHttpLocationHeader(ip, proto); host != "" {

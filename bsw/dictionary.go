@@ -41,8 +41,8 @@ func GetWildCard6(domain, serverAddr string) string {
 	}
 }
 
-func Dictionary(domain, subname, blacklist, serverAddr string) ([]Result, error) {
-	results := make([]Result, 0)
+func Dictionary(domain, subname, blacklist, serverAddr string) (Results, error) {
+	results := Results{}
 	var fqdn = subname + "." + domain
 	ip, err := LookupName(fqdn, serverAddr)
 	if err != nil {
@@ -67,8 +67,8 @@ func Dictionary(domain, subname, blacklist, serverAddr string) ([]Result, error)
 	return results, nil
 }
 
-func Dictionary6(domain, subname, blacklist, serverAddr string) ([]Result, error) {
-	results := make([]Result, 1)
+func Dictionary6(domain, subname, blacklist, serverAddr string) (Results, error) {
+	results := Results{}
 	var fqdn = subname + "." + domain
 	ip, err := LookupName6(fqdn, serverAddr)
 	if err != nil {
@@ -77,6 +77,6 @@ func Dictionary6(domain, subname, blacklist, serverAddr string) ([]Result, error
 	if ip == blacklist {
 		return results, errors.New("Returned IP in blacklist")
 	}
-	results[0] = Result{Source: "Dictionary IPv6", IP: ip, Hostname: fqdn}
+	results = append(results, Result{Source: "Dictionary IPv6", IP: ip, Hostname: fqdn})
 	return results, nil
 }

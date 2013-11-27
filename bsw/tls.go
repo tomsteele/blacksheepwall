@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-func TLS(ip string) ([]Result, error) {
-	results := []Result{}
+func TLS(ip string) (Results, error) {
+	results := Results{}
 	tconn, err := net.DialTimeout("tcp", ip+":443", 600*time.Millisecond)
 	if err != nil {
 		return results, err

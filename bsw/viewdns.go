@@ -6,8 +6,8 @@ import (
 	"net/http"
 )
 
-func ViewDnsInfo(ip string) ([]Result, error) {
-	results := make([]Result, 0)
+func ViewDnsInfo(ip string) (Results, error) {
+	results :=Results{}
 	var url = "http://viewdns.info/reverseip/?host=" + ip + "&t=1"
 	resp, err := http.Get(url)
 	if err != nil {
