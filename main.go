@@ -6,12 +6,12 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"sort"
 	"github.com/tomsteele/blacksheepwall/bsw"
 	"log"
 	"net"
 	"os"
 	"runtime"
+	"sort"
 	"text/tabwriter"
 )
 
@@ -112,25 +112,27 @@ type task func() (bsw.Results, error)
 type empty struct{}
 
 func main() {
-	flVersion := flag.Bool("version", false, "Show version and exit.")
-	flConcurrency := flag.Int("concurrency", 100, "Max amount of concurrent tasks.")
-	flCpus := flag.Int("cpus", 1, "Max amount of cpus  for the go runtime.")
-	flDebug := flag.Bool("debug", false, "Enable debugging and show errors returned from tasks.")
-	flipv6 := flag.Bool("ipv6", false, "Look for AAAA records where applicable.")
-	flServerAddr := flag.String("server", "8.8.8.8", "DNS server address.")
-	flIpFile := flag.String("input", "", "Line separated file of networks (CIDR) or IP Addresses.")
-	flReverse := flag.Bool("reverse", false, "Retrieve the PTR for each host.")
-	flHeader := flag.Bool("headers", false, "Perform HTTP(s) requests to each host and look for hostnames in a possible Location header.")
-	flTLS := flag.Bool("tls", false, "Attempt to retrieve names from TLS certificates (CommonName and Subject Alternative Name).")
-	flViewDnsInfo := flag.Bool("viewdns", false, "Lookup each host using viewdns.info's Reverse IP Lookup function.")
-	flBing := flag.String("bing", "", "Provided a base64 encoded API key. Use the Bing search API's 'ip:' operator to lookup hostnames for each host.")
-	flYandex := flag.String("yandex", "", "Provided a Yandex search XML API url. Use the Yandex search 'rhost:' operator to find subdomains of a provided domain.")
-	flDomain := flag.String("domain", "", "Target domain to use for certain tasks.")
-	flDictFile := flag.String("dictionary", "", "Attempt to retrieve the CNAME and A record for each subdomain in the line separated file.")
-	flFcrdns := flag.Bool("fcrdns", false, "Verify results by attempting to retrieve the A or AAAA record for each result previously identified hostname.")
-	flClean := flag.Bool("clean", false, "Print results as unique hostnames for each host.")
-	flCsv := flag.Bool("csv", false, "Print results in csv format.")
-	flJson := flag.Bool("json", false, "Print results as JSON.")
+	var (
+		flVersion     = flag.Bool("version", false, "Show version and exit.")
+		flConcurrency = flag.Int("concurrency", 100, "Max amount of concurrent tasks.")
+		flCpus        = flag.Int("cpus", 1, "Max amount of cpus  for the go runtime.")
+		flDebug       = flag.Bool("debug", false, "Enable debugging and show errors returned from tasks.")
+		flipv6        = flag.Bool("ipv6", false, "Look for AAAA records where applicable.")
+		flServerAddr  = flag.String("server", "8.8.8.8", "DNS server address.")
+		flIpFile      = flag.String("input", "", "Line separated file of networks (CIDR) or IP Addresses.")
+		flReverse     = flag.Bool("reverse", false, "Retrieve the PTR for each host.")
+		flHeader      = flag.Bool("headers", false, "Perform HTTP(s) requests to each host and look for hostnames in a possible Location header.")
+		flTLS         = flag.Bool("tls", false, "Attempt to retrieve names from TLS certificates (CommonName and Subject Alternative Name).")
+		flViewDnsInfo = flag.Bool("viewdns", false, "Lookup each host using viewdns.info's Reverse IP Lookup function.")
+		flBing        = flag.String("bing", "", "Provided a base64 encoded API key. Use the Bing search API's 'ip:' operator to lookup hostnames for each host.")
+		flYandex      = flag.String("yandex", "", "Provided a Yandex search XML API url. Use the Yandex search 'rhost:' operator to find subdomains of a provided domain.")
+		flDomain      = flag.String("domain", "", "Target domain to use for certain tasks.")
+		flDictFile    = flag.String("dictionary", "", "Attempt to retrieve the CNAME and A record for each subdomain in the line separated file.")
+		flFcrdns      = flag.Bool("fcrdns", false, "Verify results by attempting to retrieve the A or AAAA record for each result previously identified hostname.")
+		flClean       = flag.Bool("clean", false, "Print results as unique hostnames for each host.")
+		flCsv         = flag.Bool("csv", false, "Print results in csv format.")
+		flJson        = flag.Bool("json", false, "Print results as JSON.")
+	)
 	flag.Usage = func() { fmt.Print(usage) }
 	flag.Parse()
 
