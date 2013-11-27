@@ -95,25 +95,27 @@ type task func() (bsw.Results, error)
 type empty struct{}
 
 func main() {
+	// Command line options. For usage information see the
+	// usage variable above.
 	var (
-		flVersion     = flag.Bool("version", false, "Show version and exit.")
-		flConcurrency = flag.Int("concurrency", 100, "Max amount of concurrent tasks.")
-		flDebug       = flag.Bool("debug", false, "Enable debugging and show errors returned from tasks.")
-		flipv6        = flag.Bool("ipv6", false, "Look for AAAA records where applicable.")
-		flServerAddr  = flag.String("server", "8.8.8.8", "DNS server address.")
-		flIpFile      = flag.String("input", "", "Line separated file of networks (CIDR) or IP Addresses.")
-		flReverse     = flag.Bool("reverse", false, "Retrieve the PTR for each host.")
-		flHeader      = flag.Bool("headers", false, "Perform HTTP(s) requests to each host and look for hostnames in a possible Location header.")
-		flTLS         = flag.Bool("tls", false, "Attempt to retrieve names from TLS certificates (CommonName and Subject Alternative Name).")
-		flViewDnsInfo = flag.Bool("viewdns", false, "Lookup each host using viewdns.info's Reverse IP Lookup function.")
-		flBing        = flag.String("bing", "", "Provided a base64 encoded API key. Use the Bing search API's 'ip:' operator to lookup hostnames for each host.")
-		flYandex      = flag.String("yandex", "", "Provided a Yandex search XML API url. Use the Yandex search 'rhost:' operator to find subdomains of a provided domain.")
-		flDomain      = flag.String("domain", "", "Target domain to use for certain tasks.")
-		flDictFile    = flag.String("dictionary", "", "Attempt to retrieve the CNAME and A record for each subdomain in the line separated file.")
-		flFcrdns      = flag.Bool("fcrdns", false, "Verify results by attempting to retrieve the A or AAAA record for each result previously identified hostname.")
-		flClean       = flag.Bool("clean", false, "Print results as unique hostnames for each host.")
-		flCsv         = flag.Bool("csv", false, "Print results in csv format.")
-		flJson        = flag.Bool("json", false, "Print results as JSON.")
+		flVersion     = flag.Bool("version", false, "")
+		flConcurrency = flag.Int("concurrency", 100, "")
+		flDebug       = flag.Bool("debug", false, "")
+		flipv6        = flag.Bool("ipv6", false, "")
+		flServerAddr  = flag.String("server", "8.8.8.8", "")
+		flIpFile      = flag.String("input", "", "")
+		flReverse     = flag.Bool("reverse", false, "")
+		flHeader      = flag.Bool("headers", false, "")
+		flTLS         = flag.Bool("tls", false, "")
+		flViewDnsInfo = flag.Bool("viewdns", false, "")
+		flBing        = flag.String("bing", "", "")
+		flYandex      = flag.String("yandex", "", "")
+		flDomain      = flag.String("domain", "", "")
+		flDictFile    = flag.String("dictionary", "", "")
+		flFcrdns      = flag.Bool("fcrdns", false, "")
+		flClean       = flag.Bool("clean", false, "")
+		flCsv         = flag.Bool("csv", false, "")
+		flJson        = flag.Bool("json", false, "")
 	)
 	flag.Usage = func() { fmt.Print(usage) }
 	flag.Parse()
@@ -246,29 +248,19 @@ func main() {
 	for _, h := range ipAddrList {
 		host := h
 		if *flReverse {
-			tasks <- func() (bsw.Results, error) {
-				return bsw.Reverse(host, *flServerAddr)
-			}
+			tasks <- func() (bsw.Results, error) { return bsw.Reverse(host, *flServerAddr) }
 		}
 		if *flTLS {
-			tasks <- func() (bsw.Results, error) {
-				return bsw.TLS(host)
-			}
+			tasks <- func() (bsw.Results, error) { return bsw.TLS(host) }
 		}
 		if *flViewDnsInfo {
-			tasks <- func() (bsw.Results, error) {
-				return bsw.ViewDnsInfo(host)
-			}
+			tasks <- func() (bsw.Results, error) { return bsw.ViewDnsInfo(host) }
 		}
 		if *flBing != "" && bingPath != "" {
-			tasks <- func() (bsw.Results, error) {
-				return bsw.BingAPI(host, *flBing, bingPath)
-			}
+			tasks <- func() (bsw.Results, error) { return bsw.BingAPI(host, *flBing, bingPath) }
 		}
 		if *flHeader {
-			tasks <- func() (bsw.Results, error) {
-				return bsw.Headers(host)
-			}
+			tasks <- func() (bsw.Results, error) { return bsw.Headers(host) }
 		}
 
 	}
@@ -289,21 +281,15 @@ func main() {
 		}
 		for _, n := range nameList {
 			sub := n
-			tasks <- func() (bsw.Results, error) {
-				return bsw.Dictionary(*flDomain, sub, blacklist, *flServerAddr)
-			}
+			tasks <- func() (bsw.Results, error) { return bsw.Dictionary(*flDomain, sub, blacklist, *flServerAddr) }
 			if *flipv6 {
-				tasks <- func() (bsw.Results, error) {
-					return bsw.Dictionary6(*flDomain, sub, blacklist6, *flServerAddr)
-				}
+				tasks <- func() (bsw.Results, error) { return bsw.Dictionary6(*flDomain, sub, blacklist6, *flServerAddr) }
 			}
 		}
 	}
 
 	if *flYandex != "" && *flDomain != "" {
-		tasks <- func() (bsw.Results, error) {
-			return bsw.YandexAPI(*flDomain, *flYandex, *flServerAddr)
-		}
+		tasks <- func() (bsw.Results, error) { return bsw.YandexAPI(*flDomain, *flYandex, *flServerAddr) }
 	}
 
 	// Close the tasks channel after all jobs have completed and for each
