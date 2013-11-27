@@ -12,7 +12,6 @@ blacksheepwall is a hostname reconnaissance tool written in Go.
   -version              Show version and exit.
   -debug                Enable debugging and show errors returned from tasks.
   -concurrency <int>    Max amount of concurrent tasks.    [default: 100]
-  -cpus <int>           Max amount of cpus  for the go runtime. [default: 1]
   -server <string>      DNS server address.    [default: "8.8.8.8"]
   -input <string>       Line separated file of networks (CIDR) or
                         IP Addresses.
