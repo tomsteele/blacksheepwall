@@ -1,6 +1,6 @@
 package bsw
 
-func Reverse(ip string, serverAddr string) ([]Result, error) {
+func Reverse(ip, serverAddr string) ([]Result, error) {
 	results := make([]Result, 1)
 	hostname, err := LookupIP(ip, serverAddr)
 	if err != nil {

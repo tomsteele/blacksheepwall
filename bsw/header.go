@@ -17,7 +17,7 @@ func Headers(ip string) ([]Result, error) {
 	return results, nil
 }
 
-func hostnameFromHttpLocationHeader(ip string, protocol string) string {
+func hostnameFromHttpLocationHeader(ip, protocol string) string {
 	req, err := http.NewRequest("GET", protocol+"://"+ip, nil)
 	if err != nil {
 		return ""

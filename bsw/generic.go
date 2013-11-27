@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func LookupIP(ip string, serverAddr string) (string, error) {
+func LookupIP(ip, serverAddr string) (string, error) {
 	fqdn, err := dns.ReverseAddr(ip)
 	if err != nil {
 		return "", err
@@ -27,7 +27,7 @@ func LookupIP(ip string, serverAddr string) (string, error) {
 	}
 }
 
-func LookupName(fqdn string, serverAddr string) (string, error) {
+func LookupName(fqdn, serverAddr string) (string, error) {
 	m := new(dns.Msg)
 	m.SetQuestion(dns.Fqdn(fqdn), dns.TypeA)
 	in, err := dns.Exchange(m, serverAddr+":53")
@@ -45,7 +45,7 @@ func LookupName(fqdn string, serverAddr string) (string, error) {
 	}
 }
 
-func LookupCname(fqdn string, serverAddr string) (string, error) {
+func LookupCname(fqdn, serverAddr string) (string, error) {
 	m := new(dns.Msg)
 	m.SetQuestion(dns.Fqdn(fqdn), dns.TypeCNAME)
 	in, err := dns.Exchange(m, serverAddr+":53")
@@ -63,7 +63,7 @@ func LookupCname(fqdn string, serverAddr string) (string, error) {
 	}
 }
 
-func LookupName6(fqdn string, serverAddr string) (string, error) {
+func LookupName6(fqdn, serverAddr string) (string, error) {
 	m := new(dns.Msg)
 	m.SetQuestion(dns.Fqdn(fqdn), dns.TypeAAAA)
 	in, err := dns.Exchange(m, serverAddr+":53")

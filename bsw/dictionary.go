@@ -5,7 +5,7 @@ import (
 	"github.com/miekg/dns"
 )
 
-func GetWildCard(domain string, serverAddr string) string {
+func GetWildCard(domain, serverAddr string) string {
 	var fqdn = "youmustconstructmorepylons." + domain
 	m := new(dns.Msg)
 	m.SetQuestion(dns.Fqdn(fqdn), dns.TypeA)
@@ -23,7 +23,7 @@ func GetWildCard(domain string, serverAddr string) string {
 	}
 }
 
-func GetWildCard6(domain string, serverAddr string) string {
+func GetWildCard6(domain, serverAddr string) string {
 	var fqdn = "youmustconstructmorepylons." + domain
 	m := new(dns.Msg)
 	m.SetQuestion(dns.Fqdn(fqdn), dns.TypeAAAA)
@@ -41,7 +41,7 @@ func GetWildCard6(domain string, serverAddr string) string {
 	}
 }
 
-func Dictionary(domain string, subname string, blacklist string, serverAddr string) ([]Result, error) {
+func Dictionary(domain, subname, blacklist, serverAddr string) ([]Result, error) {
 	results := make([]Result, 0)
 	var fqdn = subname + "." + domain
 	ip, err := LookupName(fqdn, serverAddr)
@@ -67,7 +67,7 @@ func Dictionary(domain string, subname string, blacklist string, serverAddr stri
 	return results, nil
 }
 
-func Dictionary6(domain string, subname string, blacklist string, serverAddr string) ([]Result, error) {
+func Dictionary6(domain, subname, blacklist, serverAddr string) ([]Result, error) {
 	results := make([]Result, 1)
 	var fqdn = subname + "." + domain
 	ip, err := LookupName6(fqdn, serverAddr)

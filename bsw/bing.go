@@ -54,7 +54,7 @@ func FindBingSearchPath(key string) (string, error) {
 	return "", errors.New("Invalid Bing API key")
 }
 
-func BingAPI(ip string, key string, path string) ([]Result, error) {
+func BingAPI(ip, key, path string) ([]Result, error) {
 	results := make([]Result, 0)
 	var query = "?Query=%27ip:" + ip + "%27&$top=50&Adult=%27off%27&$format=json"
 	var fullUrl = host + path + query

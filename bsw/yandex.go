@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func YandexAPI(domain string, apiUrl string, serverAddr string) ([]Result, error) {
+func YandexAPI(domain, apiUrl, serverAddr string) ([]Result, error) {
 	results := make([]Result, 0)
 	var xmlTemplate = "<?xml version='1.0' encoding='UTF-8'?><request><query>%s</query><sortby>rlv</sortby><maxpassages>1</maxpassages><page>0</page><groupings><groupby attr=\" \" mode=\"flat\" groups-on-page=\"100\" docs-in-group=\"1\" /></groupings></request>"
 	parts := strings.Split(domain, ".")
