@@ -57,8 +57,7 @@ func Dictionary(domain string, subname string, blacklist string, serverAddr stri
 		if ip == blacklist {
 			return results, errors.New("Returned IP in blackslist")
 		}
-		results = append(results, Result{Source: "Dictionary-CNAME", IP: ip, Hostname: fqdn})
-		results = append(results, Result{Source: "Dictionary-CNAME", IP: ip, Hostname: cfqdn})
+		results = append(results, Result{Source: "Dictionary-CNAME", IP: ip, Hostname: fqdn}, Result{Source: "Dictionary-CNAME", IP: ip, Hostname: cfqdn})
 		return results, nil
 	}
 	if ip == blacklist {
