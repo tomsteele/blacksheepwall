@@ -23,7 +23,7 @@ var usage = `
   -version              Show version and exit.
   -debug                Enable debugging and show errors returned from tasks.
   -concurrency <int>    Max amount of concurrent tasks.    [default: 100]
-  -cpus <int>           Max amount of cpus  for the go runtime.    [default: runtime.NumCPU()]
+  -cpus <int>           Max amount of cpus  for the go runtime.    [default: 1]
   -server <string>      DNS server address.    [default: "8.8.8.8"]
   -input <string>       Line separated file of networks (CIDR) or 
                         IP Addresses.
@@ -101,7 +101,11 @@ func setMaxProcs(cpus int) {
 	if cpus > runtime.NumCPU() {
 		log.Fatal("-cpus count too high")
 	}
+	if cpus == 1 {
+		return
+	}
 	runtime.GOMAXPROCS(cpus)
+	return
 }
 
 type task func() ([]bsw.Result, error)
@@ -110,7 +114,7 @@ type empty struct{}
 func main() {
 	flVersion := flag.Bool("version", false, "Show version and exit.")
 	flConcurrency := flag.Int("concurrency", 100, "Max amount of concurrent tasks.")
-	flCpus := flag.Int("cpus", runtime.NumCPU(), "Max amount of cpus  for the go runtime.")
+	flCpus := flag.Int("cpus", 1, "Max amount of cpus  for the go runtime.")
 	flDebug := flag.Bool("debug", false, "Enable debugging and show errors returned from tasks.")
 	flipv6 := flag.Bool("ipv6", false, "Look for AAAA records where applicable.")
 	flServerAddr := flag.String("server", "8.8.8.8", "DNS server address.")
