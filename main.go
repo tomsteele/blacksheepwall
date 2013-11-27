@@ -321,14 +321,15 @@ func main() {
 	sort.Sort(results)
 
 	// Output options
-	if *flJson {
+	switch {
+	case *flJson:
 		j, _ := json.MarshalIndent(results, "", "    ")
 		fmt.Println(string(j))
-	} else if *flCsv {
+	case *flCsv:
 		for _, r := range results {
 			fmt.Printf("%s,%s,%s\n", r.Hostname, r.IP, r.Source)
 		}
-	} else if *flClean {
+	case *flClean:
 		cleanSet := make(map[string][]string)
 		for _, r := range results {
 			cleanSet[r.Hostname] = append(cleanSet[r.Hostname], r.IP)
@@ -339,7 +340,7 @@ func main() {
 				fmt.Printf("\t%s\n", ip)
 			}
 		}
-	} else {
+	default:
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 4, ' ', 0)
 		fmt.Fprintln(w, "IP\tHostname\tSource")
 		for _, r := range results {
