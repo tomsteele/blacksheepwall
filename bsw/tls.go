@@ -7,13 +7,12 @@ import (
 )
 
 func TLS(ip string) ([]Result, error) {
-	results := make([]Result, 0)
+	results := []Result{}
 	tconn, err := net.DialTimeout("tcp", ip+":443", 600*time.Millisecond)
 	if err != nil {
 		return results, err
 	}
-	config := tls.Config{InsecureSkipVerify: true}
-	conn := tls.Client(tconn, &config)
+	conn := tls.Client(tconn, &tls.Config{InsecureSkipVerify: true})
 	defer conn.Close()
 	if err := conn.Handshake(); err != nil {
 		return results, err
