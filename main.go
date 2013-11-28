@@ -177,12 +177,12 @@ func main() {
 	//          a function wrapper that returns a slice of results and a possible error.
 	//
 	// res:     When each task is called in the pool, it will send valid results to
-	//          the res channel. A goroutine manages this channel and appends results
-	//          to results slice.
+	//          the res channel.
 	tracker := make(chan empty)
 	tasks := make(chan task, *flConcurrency)
 	res := make(chan bsw.Results, *flConcurrency)
-	results := bsw.Results{}
+	// Use a map that acts like a set to store only unique results
+	resMap:= make(map[bsw.Result]bool)
 
 	// Start up *flConcurrency amount of goroutines
 	log.Printf("Spreading tasks across %d goroutines", *flConcurrency)
@@ -219,15 +219,17 @@ func main() {
 				for _, r := range result {
 					ip, err := bsw.LookupName(r.Hostname, *flServerAddr)
 					if err == nil && len(ip) > 0 {
-						results = append(results, bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname})
+						resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname}] = true
 					}
 					ip, err = bsw.LookupName6(r.Hostname, *flServerAddr)
 					if err == nil && len(ip) > 0 {
-						results = append(results, bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname})
+						resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname}] = true
 					}
 				}
 			} else {
-				results = append(results, result...)
+				for _, r := range result {
+					resMap[r] = true
+				}
 			}
 		}
 		tracker <- empty{}
@@ -300,9 +302,14 @@ func main() {
 	close(res)
 	// Receive and empty message from the result gatherer
 	<-tracker
-
 	os.Stderr.WriteString("\r")
 	log.Println("All tasks completed\n")
+
+	// Create a results slice from the unique set in resMap. Allows for sorting.
+	results := bsw.Results{}
+	for k, _ := range resMap {
+		results = append(results, k)
+	}
 	sort.Sort(results)
 
 	// Output options
@@ -321,9 +328,6 @@ func main() {
 		}
 		for k, v := range cleanSet {
 			fmt.Printf("%s:\n", k)
-			for _, h := range v {
-				fmt.Printf("\t%s\n", h)
-			}
 		}
 	default:
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 4, ' ', 0)
