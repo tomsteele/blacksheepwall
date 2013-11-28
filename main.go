@@ -328,6 +328,9 @@ func main() {
 		}
 		for k, v := range cleanSet {
 			fmt.Printf("%s:\n", k)
+			for _, h := range v {
+				fmt.Printf("\t%s\n", h)
+			}
 		}
 	default:
 		w := tabwriter.NewWriter(os.Stdout, 0, 8, 4, ' ', 0)
