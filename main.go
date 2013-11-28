@@ -317,12 +317,12 @@ func main() {
 	case *flClean:
 		cleanSet := make(map[string][]string)
 		for _, r := range results {
-			cleanSet[r.Hostname] = append(cleanSet[r.Hostname], r.IP)
+			cleanSet[r.IP] = append(cleanSet[r.IP], r.Hostname)
 		}
 		for k, v := range cleanSet {
 			fmt.Printf("%s:\n", k)
-			for _, ip := range v {
-				fmt.Printf("\t%s\n", ip)
+			for _, h := range v {
+				fmt.Printf("\t%s\n", h)
 			}
 		}
 	default:
