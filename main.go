@@ -51,7 +51,7 @@ var usage = `
 
 // Returns all ip addresses from each CIDR range in a list.
 func linesToIpList(lines []string) ([]string, error) {
-	ipList := make([]string, 0)
+	ipList := []string{}
 	for _, line := range lines {
 		if net.ParseIP(line) != nil {
 			ipList = append(ipList, line)
@@ -83,7 +83,7 @@ func readFileLines(path string) ([]string, error) {
 		return nil, err
 	}
 	defer file.Close()
-	lines := make([]string, 0)
+	lines := []string{}
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
@@ -126,7 +126,7 @@ func main() {
 	}
 
 	// Holds all ip addresses for testing
-	ipAddrList := make([]string, 0)
+	ipAddrList := []string{}
 
 	// Used to hold a ip or CIDR range passed as fl.Arg(0)
 	var flNetwork string

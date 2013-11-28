@@ -7,7 +7,7 @@ import (
 
 func GetWildCard(domain, serverAddr string) string {
 	var fqdn = "youmustconstructmorepylons." + domain
-	m := new(dns.Msg)
+	m := &dns.Msg{}
 	m.SetQuestion(dns.Fqdn(fqdn), dns.TypeA)
 	in, err := dns.Exchange(m, serverAddr+":53")
 	if err != nil {
@@ -25,7 +25,7 @@ func GetWildCard(domain, serverAddr string) string {
 
 func GetWildCard6(domain, serverAddr string) string {
 	var fqdn = "youmustconstructmorepylons." + domain
-	m := new(dns.Msg)
+	m := &dns.Msg{}
 	m.SetQuestion(dns.Fqdn(fqdn), dns.TypeAAAA)
 	in, err := dns.Exchange(m, serverAddr+":53")
 	if err != nil {
