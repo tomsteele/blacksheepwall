@@ -30,8 +30,11 @@ type bingMetadata struct {
 	Type string
 }
 
-var host = "https://api.datamarket.azure.com"
+const host = "https://api.datamarket.azure.com"
 
+// Attempts an authenticated search request to two different Bing API paths. If and when a
+// search is successfull, that path will be returned. If no path is valid this function
+// returns an error.
 func FindBingSearchPath(key string) (string, error) {
 	var paths = []string{"/Data.ashx/Bing/Search/v1/Web", "/Data.ashx/Bing/SearchWeb/v1/Web"}
 	var query = "?Query=%27I<3BSW%27"
@@ -54,6 +57,8 @@ func FindBingSearchPath(key string) (string, error) {
 	return "", errors.New("Invalid Bing API key")
 }
 
+// Uses the Bing search API and 'ip' search operator to find alternate hostnames for
+// a single IP.
 func BingAPI(ip, key, path string) (Results, error) {
 	results := Results{}
 	var query = "?Query=%27ip:" + ip + "%27&$top=50&Adult=%27off%27&$format=json"
