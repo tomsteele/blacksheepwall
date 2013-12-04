@@ -6,7 +6,7 @@ import (
 )
 
 // Search for a possible wild card host by attempting to 
-// get an A record youmustconstructmoreplylong.[domain].
+// get an A record youmustconstructmoreplylons.[domain].
 func GetWildCard(domain, serverAddr string) string {
 	var fqdn = "youmustconstructmorepylons." + domain
 	m := &dns.Msg{}
@@ -26,7 +26,7 @@ func GetWildCard(domain, serverAddr string) string {
 }
 
 // Search for a possible wild card host by attempting to 
-// get an AAAA record youmustconstructmoreplylong.[domain].
+// get an AAAA record youmustconstructmoreplylons.[domain].
 func GetWildCard6(domain, serverAddr string) string {
 	var fqdn = "youmustconstructmorepylons." + domain
 	m := &dns.Msg{}
