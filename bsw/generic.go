@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// Return hostname from PTR record or error.
 func LookupIP(ip, serverAddr string) (string, error) {
 	fqdn, err := dns.ReverseAddr(ip)
 	if err != nil {
@@ -27,6 +28,7 @@ func LookupIP(ip, serverAddr string) (string, error) {
 	}
 }
 
+// Return IPv4 address from A record or error.
 func LookupName(fqdn, serverAddr string) (string, error) {
 	m := &dns.Msg{}
 	m.SetQuestion(dns.Fqdn(fqdn), dns.TypeA)
@@ -45,6 +47,7 @@ func LookupName(fqdn, serverAddr string) (string, error) {
 	}
 }
 
+// Return IPv4 address from CNAME record or error.
 func LookupCname(fqdn, serverAddr string) (string, error) {
 	m := &dns.Msg{}
 	m.SetQuestion(dns.Fqdn(fqdn), dns.TypeCNAME)
@@ -63,6 +66,7 @@ func LookupCname(fqdn, serverAddr string) (string, error) {
 	}
 }
 
+// Return IPv6 address from AAAA record or error
 func LookupName6(fqdn, serverAddr string) (string, error) {
 	m := &dns.Msg{}
 	m.SetQuestion(dns.Fqdn(fqdn), dns.TypeAAAA)
