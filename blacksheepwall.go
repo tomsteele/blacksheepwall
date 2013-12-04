@@ -1,3 +1,6 @@
+/* Blacksheepwall is a hostname reconnaissance tool, it is similar to other
+tools, but has a focus on speed.*/
+
 package main
 
 import (
@@ -14,7 +17,7 @@ import (
 	"text/tabwriter"
 )
 
-var usage = `
+const usage = `
   Usage: blacksheepwall [options] <ip address or CIDR>
 
   Options:
@@ -49,7 +52,8 @@ var usage = `
 
 `
 
-// Returns all ip addresses from each CIDR range in a list.
+// Processes a list of IP addresses or networks in CIDR format.
+// Returning a list of all possible IP addresses.
 func linesToIpList(lines []string) ([]string, error) {
 	ipList := []string{}
 	for _, line := range lines {
@@ -66,7 +70,7 @@ func linesToIpList(lines []string) ([]string, error) {
 	return ipList, nil
 }
 
-// Increases IP by a single address
+// Increases an IP by a single address.
 func increaseIp(ip net.IP) {
 	for j := len(ip) - 1; j >= 0; j-- {
 		ip[j]++
@@ -76,7 +80,7 @@ func increaseIp(ip net.IP) {
 	}
 }
 
-// Reads lines from a file and returns as a slice.
+// Reads lines from a file and return as a slice.
 func readFileLines(path string) ([]string, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -125,13 +129,13 @@ func main() {
 		os.Exit(0)
 	}
 
-	// Holds all ip addresses for testing
+	// Holds all IP addresses for testing.
 	ipAddrList := []string{}
 
-	// Used to hold a ip or CIDR range passed as fl.Arg(0)
+	// Used to hold a ip or CIDR range passed as fl.Arg(0).
 	var flNetwork string
 
-	// Verify that some sort of work load was given in commands
+	// Verify that some sort of work load was given in commands.
 	if *flIpFile == "" && *flDomain == "" && len(flag.Args()) < 1 {
 		log.Fatal("You didn't provide any work for me to do")
 	}
@@ -145,7 +149,7 @@ func main() {
 		log.Fatal("-domain provided but no methods provided that use it")
 	}
 
-	// Get first argument that is not an option and turn it into a list of ips
+	// Get first argument that is not an option and turn it into a list of IPs.
 	if len(flag.Args()) > 0 {
 		flNetwork = flag.Arg(0)
 		list, err := linesToIpList([]string{flNetwork})
@@ -155,9 +159,9 @@ func main() {
 		ipAddrList = append(ipAddrList, list...)
 	}
 
-	// If file given as -input, read lines and turn each possible ip or network into
-	// a list of ips. Appends list to ipAddrList. Will fail fatally if line in file
-	// is not a valid ip or CIDR range.
+	// If file given as -input, read lines and turn each possible IP or network into
+	// a list of IPs. Appends list to ipAddrList. Will fail fatally if line in file
+	// is not a valid IP or CIDR range.
 	if *flIpFile != "" {
 		lines, err := readFileLines(*flIpFile)
 		if err != nil {
@@ -181,10 +185,10 @@ func main() {
 	tracker := make(chan empty)
 	tasks := make(chan task, *flConcurrency)
 	res := make(chan bsw.Results, *flConcurrency)
-	// Use a map that acts like a set to store only unique results
-	resMap:= make(map[bsw.Result]bool)
+	// Use a map that acts like a set to store only unique results.
+	resMap := make(map[bsw.Result]bool)
 
-	// Start up *flConcurrency amount of goroutines
+	// Start up *flConcurrency amount of goroutines.
 	log.Printf("Spreading tasks across %d goroutines", *flConcurrency)
 	for i := 0; i < *flConcurrency; i++ {
 		go func() {
@@ -209,7 +213,7 @@ func main() {
 		}()
 	}
 
-	// Ingest incoming results
+	// Ingest incoming results.
 	go func() {
 		for result := range res {
 			if len(result) < 1 {
@@ -245,7 +249,7 @@ func main() {
 		bingPath = p
 	}
 
-	// ip based functionality should be added to the pool here
+	// IP based functionality should be added to the pool here.
 	for _, h := range ipAddrList {
 		host := h
 		if *flReverse {
@@ -266,15 +270,15 @@ func main() {
 
 	}
 
-	// Domain based functions will likely require separate blocks
+	// Domain based functions will likely require separate blocks and should be added below.
 
-	// Subdomain dictionary guessing
+	// Subdomain dictionary guessing.
 	if *flDictFile != "" && *flDomain != "" {
 		nameList, err := readFileLines(*flDictFile)
 		if err != nil {
 			log.Fatal("Error reading " + *flDictFile + " " + err.Error())
 		}
-		// Get an ip for a possible wildcard domain and use it as a blacklist
+		// Get an IP for a possible wildcard domain and use it as a blacklist.
 		blacklist := bsw.GetWildCard(*flDomain, *flServerAddr)
 		var blacklist6 string
 		if *flipv6 {
@@ -300,7 +304,7 @@ func main() {
 		<-tracker
 	}
 	close(res)
-	// Receive and empty message from the result gatherer
+	// Receive and empty message from the result gatherer.
 	<-tracker
 	os.Stderr.WriteString("\r")
 	log.Println("All tasks completed\n")
@@ -312,7 +316,6 @@ func main() {
 	}
 	sort.Sort(results)
 
-	// Output options
 	switch {
 	case *flJson:
 		j, _ := json.MarshalIndent(results, "", "    ")
