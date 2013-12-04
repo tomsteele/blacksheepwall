@@ -2,47 +2,24 @@ package bsw
 
 import (
 	"errors"
-	"github.com/miekg/dns"
 )
 
+const wildcardsub = "youmustcontstuctmoreplyons."
+
 // Search for a possible wild card host by attempting to 
-// get an A record youmustconstructmoreplylons.[domain].
+// get an A record for wildcardsub + domain.
 func GetWildCard(domain, serverAddr string) string {
-	var fqdn = "youmustconstructmorepylons." + domain
-	m := &dns.Msg{}
-	m.SetQuestion(dns.Fqdn(fqdn), dns.TypeA)
-	in, err := dns.Exchange(m, serverAddr+":53")
-	if err != nil {
-		return ""
-	}
-	if len(in.Answer) < 1 {
-		return ""
-	}
-	if a, ok := in.Answer[0].(*dns.A); ok {
-		return a.A.String()
-	} else {
-		return ""
-	}
+	var fqdn = wildcardsub + domain
+	ip, _ := LookupName(fqdn, serverAddr)
+	return ip
 }
 
 // Search for a possible wild card host by attempting to 
-// get an AAAA record youmustconstructmoreplylons.[domain].
+// get an AAAA record wildcardsub + domain.
 func GetWildCard6(domain, serverAddr string) string {
-	var fqdn = "youmustconstructmorepylons." + domain
-	m := &dns.Msg{}
-	m.SetQuestion(dns.Fqdn(fqdn), dns.TypeAAAA)
-	in, err := dns.Exchange(m, serverAddr+":53")
-	if err != nil {
-		return ""
-	}
-	if len(in.Answer) < 1 {
-		return ""
-	}
-	if a, ok := in.Answer[0].(*dns.AAAA); ok {
-		return a.AAAA.String()
-	} else {
-		return ""
-	}
+	var fqdn = wildcardsub + domain
+        ip, _ := LookupName6(fqdn, serverAddr)
+        return ip
 }
 
 // Attempt to get an A and CNAME record for a sub domain of domain.
