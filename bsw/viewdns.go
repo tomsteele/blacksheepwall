@@ -1,10 +1,12 @@
 package bsw
 
 import (
-	"github.com/moovweb/gokogiri"
-	"io/ioutil"
+	"github.com/PuerkitoBio/goquery"
 	"net/http"
 )
+
+// Very long selector...
+const viewDnsSelector = "#null > tbody:nth-child(1) > tr:nth-child(3) > td:nth-child(1) > font:nth-child(1) > i:nth-child(7) > table:nth-child(4) > tbody:nth-child(1) > tr:nth-child(n+1) > td:nth-child(1)"
 
 // Lookup an IP using viewdns.info's reverseip functionality, parsing
 // the HTML table for hostnames.
@@ -16,21 +18,12 @@ func ViewDnsInfo(ip string) (Results, error) {
 		return results, err
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		return results, err
 	}
-	doc, err := gokogiri.ParseHtml(body)
-	defer doc.Free()
-	if err != nil {
-		return results, err
-	}
-	nodes, err := doc.Search("//table[@border=1]/tr[position() > 1]/td[1]")
-	if err != nil {
-		return results, err
-	}
-	for _, node := range nodes {
-		results = append(results, Result{Source: "viewdns.info", IP: ip, Hostname: node.InnerHtml()})
-	}
+	doc.Selection.Find(viewDnsSelector).Each(func(_ int, s *goquery.Selection) {
+		results = append(results, Result{Source: "viewdns.info", IP: ip, Hostname: s.Text()})
+	})
 	return results, nil
 }
