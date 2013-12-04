@@ -9,7 +9,7 @@ import (
 // Lookup an IP using viewdns.info's reverseip functionality, parsing
 // the HTML table for hostnames.
 func ViewDnsInfo(ip string) (Results, error) {
-	results :=Results{}
+	results := Results{}
 	var url = "http://viewdns.info/reverseip/?host=" + ip + "&t=1"
 	resp, err := http.Get(url)
 	if err != nil {

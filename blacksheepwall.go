@@ -1,4 +1,4 @@
-/* Blacksheepwall is a hostname reconnaissance tool, it is similar to other
+/*Blacksheepwall is a hostname reconnaissance tool, it is similar to other
 tools, but has a focus on speed.*/
 
 package main

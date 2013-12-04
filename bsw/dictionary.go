@@ -6,7 +6,7 @@ import (
 
 const wildcardsub = "youmustcontstuctmoreplyons."
 
-// Search for a possible wild card host by attempting to 
+// Search for a possible wild card host by attempting to
 // get an A record for wildcardsub + domain.
 func GetWildCard(domain, serverAddr string) string {
 	var fqdn = wildcardsub + domain
@@ -14,12 +14,12 @@ func GetWildCard(domain, serverAddr string) string {
 	return ip
 }
 
-// Search for a possible wild card host by attempting to 
+// Search for a possible wild card host by attempting to
 // get an AAAA record wildcardsub + domain.
 func GetWildCard6(domain, serverAddr string) string {
 	var fqdn = wildcardsub + domain
-        ip, _ := LookupName6(fqdn, serverAddr)
-        return ip
+	ip, _ := LookupName6(fqdn, serverAddr)
+	return ip
 }
 
 // Attempt to get an A and CNAME record for a sub domain of domain.
