@@ -5,6 +5,8 @@ import (
 	"github.com/miekg/dns"
 )
 
+// Search for a possible wild card host by attempting to 
+// get an A record youmustconstructmoreplylong.[domain].
 func GetWildCard(domain, serverAddr string) string {
 	var fqdn = "youmustconstructmorepylons." + domain
 	m := &dns.Msg{}
@@ -23,6 +25,8 @@ func GetWildCard(domain, serverAddr string) string {
 	}
 }
 
+// Search for a possible wild card host by attempting to 
+// get an AAAA record youmustconstructmoreplylong.[domain].
 func GetWildCard6(domain, serverAddr string) string {
 	var fqdn = "youmustconstructmorepylons." + domain
 	m := &dns.Msg{}
@@ -41,6 +45,7 @@ func GetWildCard6(domain, serverAddr string) string {
 	}
 }
 
+// Attempt to get an A and CNAME record for a sub domain of domain.
 func Dictionary(domain, subname, blacklist, serverAddr string) (Results, error) {
 	results := Results{}
 	var fqdn = subname + "." + domain
@@ -67,6 +72,7 @@ func Dictionary(domain, subname, blacklist, serverAddr string) (Results, error) 
 	return results, nil
 }
 
+// Attempt to get an AAAA record for a sub domain of a domain.
 func Dictionary6(domain, subname, blacklist, serverAddr string) (Results, error) {
 	results := Results{}
 	var fqdn = subname + "." + domain
