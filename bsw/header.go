@@ -7,6 +7,8 @@ import (
 	"regexp"
 )
 
+// Using http(s), attempt to connect to an IP. If connection is successfull return any hostnames from the possible
+// 'Location' headers.
 func Headers(ip string) (Results, error) {
 	results := []Result{}
 	for _, proto := range []string{"http", "https"} {
@@ -17,6 +19,7 @@ func Headers(ip string) (Results, error) {
 	return results, nil
 }
 
+// Performs http(s) request and parses possible 'Location' headers.
 func hostnameFromHttpLocationHeader(ip, protocol string) string {
 	req, err := http.NewRequest("GET", protocol+"://"+ip, nil)
 	if err != nil {
