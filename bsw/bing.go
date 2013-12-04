@@ -30,7 +30,7 @@ type bingMetadata struct {
 	Type string
 }
 
-const host = "https://api.datamarket.azure.com"
+const azureUrl = "https://api.datamarket.azure.com"
 
 // Attempts an authenticated search request to two different Bing API paths. If and when a
 // search is successfull, that path will be returned. If no path is valid this function
@@ -39,7 +39,7 @@ func FindBingSearchPath(key string) (string, error) {
 	var paths = []string{"/Data.ashx/Bing/Search/v1/Web", "/Data.ashx/Bing/SearchWeb/v1/Web"}
 	var query = "?Query=%27I<3BSW%27"
 	for _, path := range paths {
-		var fullUrl = host + path + query
+		var fullUrl = azureUrl + path + query
 		client := &http.Client{}
 		req, err := http.NewRequest("GET", fullUrl, nil)
 		if err != nil {
@@ -62,7 +62,7 @@ func FindBingSearchPath(key string) (string, error) {
 func BingAPI(ip, key, path string) (Results, error) {
 	results := Results{}
 	var query = "?Query=%27ip:" + ip + "%27&$top=50&Adult=%27off%27&$format=json"
-	var fullUrl = host + path + query
+	var fullUrl = azureUrl + path + query
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", fullUrl, nil)
 	if err != nil {
