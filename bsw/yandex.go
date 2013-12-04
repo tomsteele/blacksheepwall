@@ -2,8 +2,7 @@ package bsw
 
 import (
 	"fmt"
-	"github.com/moovweb/gokogiri"
-	"io/ioutil"
+	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"strings"
 )
@@ -21,32 +20,20 @@ func YandexAPI(domain, apiUrl, serverAddr string) (Results, error) {
 		return results, err
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return results, err
-	}
-	doc, err := gokogiri.ParseXml(body)
-	defer doc.Free()
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		return results, nil
 	}
-	nodes, err := doc.Search("//domain")
-	if err != nil {
-		return results, nil
-	}
-	if len(nodes) > 0 {
-		domainSet := make(map[string]bool)
-		for _, node := range nodes {
-			domain := node.InnerHtml()
-			if domainSet[domain] {
-				continue
-			}
-			domainSet[domain] = true
-			ip, err := LookupName(domain, serverAddr)
-			if err == nil {
-				results = append(results, Result{Source: "Yandex API", IP: ip, Hostname: domain})
-			}
+	domainSet := make(map[string]bool)
+	doc.Find("domain").Each(func(_ int, s *goquery.Selection) {
+		domain := s.Text()
+		if domainSet[domain] {
+			return
 		}
-	}
+		ip, err := LookupName(domain, serverAddr)
+		if err == nil {
+			results = append(results, Result{Source: "Yandex API", IP: ip, Hostname: domain})
+		}
+	})
 	return results, nil
 }
