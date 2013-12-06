@@ -2,9 +2,11 @@ package bsw
 
 import (
 	"crypto/tls"
+	"net"
 	"net/http"
 	"net/url"
 	"regexp"
+	"time"
 )
 
 // Using http(s), attempt to connect to an IP. If connection is successfull return any hostnames from the possible
@@ -25,7 +27,12 @@ func hostnameFromHttpLocationHeader(ip, protocol string) string {
 	if err != nil {
 		return ""
 	}
-	tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
+	tr := &http.Transport{
+		Dial: func(network, addr string) (net.Conn, error) {
+			return net.DialTimeout(network, addr, time.Duration(1*time.Second))
+		},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
 	res, err := tr.RoundTrip(req)
 	if err != nil {
 		return ""
