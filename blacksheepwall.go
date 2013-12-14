@@ -4,12 +4,12 @@ tools, but has a focus on speed.*/
 package main
 
 import (
-	"./bsw"
 	"bufio"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/tomsteele/blacksheepwall/bsw"
 	"log"
 	"net"
 	"os"
