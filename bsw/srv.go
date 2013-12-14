@@ -1,11 +1,7 @@
 package bsw
 
-import (
-	"errors"
-	"github.com/miekg/dns"
-)
-
-func LookupSRV(domain, dnsServer string) (Results, error) {
+// Iterates over a list of common SRV records, returning hostname and IP results for each.
+func SRV(domain, dnsServer string) (Results, error) {
 	results := []Result{}
 	srvrcdarr := [...]string{"_gc._tcp.", "_kerberos._tcp.", "_kerberos._udp.", "_ldap._tcp.",
 		"_test._tcp.", "_sips._tcp.", "_sip._udp.", "_sip._tcp.", "_aix._tcp.",
@@ -24,47 +20,15 @@ func LookupSRV(domain, dnsServer string) (Results, error) {
 
 	for _, value := range srvrcdarr {
 		fqdn := value + domain
-		srvTarget, _ := MakeSRVRequest(fqdn, dnsServer)
-		if len(srvTarget) > 0 {
-			ip, _ := LookupFQDN(srvTarget, dnsServer)
-			results = append(results, Result{Source: "SRV", IP: ip, Hostname: srvTarget})
+		srvTarget, err := LookupSRV(fqdn, dnsServer)
+		if err != nil {
+			continue
 		}
-
+		ip, err := LookupName(srvTarget, dnsServer)
+		if err != nil {
+			continue
+		}
+		results = append(results, Result{Source: "SRV", IP: ip, Hostname: srvTarget})
 	}
 	return results, nil
-}
-
-func MakeSRVRequest(fqdn, dnsServer string) (string, error) {
-	m := &dns.Msg{}
-	m.SetQuestion(dns.Fqdn(fqdn), dns.TypeSRV)
-	in, err := dns.Exchange(m, dnsServer+":53")
-	if err != nil {
-		return "", err
-	}
-	if len(in.Answer) < 1 {
-		return "", errors.New("No Answer")
-	}
-	if a, ok := in.Answer[0].(*dns.SRV); ok {
-		return a.Target, nil
-	} else {
-		return "", errors.New("No SRV record returned")
-	}
-}
-
-func LookupFQDN(fqdn, dnsServer string) (string, error) {
-	m := &dns.Msg{}
-	m.SetQuestion(dns.Fqdn(fqdn), dns.TypeA)
-	in, err := dns.Exchange(m, dnsServer+":53")
-	if err != nil {
-		return "", err
-	}
-	if len(in.Answer) < 1 {
-		return "", errors.New("No Answer")
-	}
-	if a, ok := in.Answer[0].(*dns.A); ok {
-		ip := a.A.String()
-		return ip, nil
-	} else {
-		return "", errors.New("No A record returned")
-	}
 }

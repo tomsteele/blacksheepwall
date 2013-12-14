@@ -298,7 +298,7 @@ func main() {
 	}
 
 	if *flSRV != false && *flDomain != "" {
-		tasks <- func() (bsw.Results, error) { return bsw.LookupSRV(*flDomain, *flServerAddr) }
+		tasks <- func() (bsw.Results, error) { return bsw.SRV(*flDomain, *flServerAddr) }
 	}
 
 	if *flYandex != "" && *flDomain != "" {

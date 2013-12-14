@@ -66,7 +66,7 @@ func LookupCname(fqdn, serverAddr string) (string, error) {
 	}
 }
 
-// Return IPv6 address from AAAA record or error
+// Return IPv6 address from AAAA record or error.
 func LookupName6(fqdn, serverAddr string) (string, error) {
 	m := &dns.Msg{}
 	m.SetQuestion(dns.Fqdn(fqdn), dns.TypeAAAA)
@@ -82,5 +82,23 @@ func LookupName6(fqdn, serverAddr string) (string, error) {
 		return ip, nil
 	} else {
 		return "", errors.New("No AAAA record returned")
+	}
+}
+
+// Return hostname from SRV record or error.
+func LookupSRV(fqdn, dnsServer string) (string, error) {
+	m := &dns.Msg{}
+	m.SetQuestion(dns.Fqdn(fqdn), dns.TypeSRV)
+	in, err := dns.Exchange(m, dnsServer+":53")
+	if err != nil {
+		return "", err
+	}
+	if len(in.Answer) < 1 {
+		return "", errors.New("No Answer")
+	}
+	if a, ok := in.Answer[0].(*dns.SRV); ok {
+		return strings.TrimRight(a.Target, "."), nil
+	} else {
+		return "", errors.New("No SRV record returned")
 	}
 }
