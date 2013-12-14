@@ -4,12 +4,12 @@ tools, but has a focus on speed.*/
 package main
 
 import (
+	"./bsw"
 	"bufio"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/tomsteele/blacksheepwall/bsw"
 	"log"
 	"net"
 	"os"
@@ -44,6 +44,7 @@ const usage = `
                         (CommonName and Subject Alternative Name).
   -viewdns              Lookup each host using viewdns.info's Reverse IP
                         Lookup function.
+  -srv 					Find SRV hostname record associated with an IP address.
   -fcrdns               Verify results by attempting to retrieve the A or AAAA record for
                         each result previously identified hostname.
   -clean                Print results as unique hostnames for each host.
@@ -112,6 +113,7 @@ func main() {
 		flHeader      = flag.Bool("headers", false, "")
 		flTLS         = flag.Bool("tls", false, "")
 		flViewDnsInfo = flag.Bool("viewdns", false, "")
+		flSRV         = flag.Bool("srv", false, "")
 		flBing        = flag.String("bing", "", "")
 		flYandex      = flag.String("yandex", "", "")
 		flDomain      = flag.String("domain", "", "")
@@ -145,7 +147,10 @@ func main() {
 	if *flDictFile != "" && *flDomain == "" {
 		log.Fatal("Dictionary lookup requires domain set with -domain")
 	}
-	if *flDomain != "" && *flYandex == "" && *flDictFile == "" {
+	if *flDomain == "" && *flSRV == true {
+		log.Fatal("SRV lookup requires domain set with -domain")
+	}
+	if *flDomain != "" && *flYandex == "" && *flDictFile == "" && *flSRV == false {
 		log.Fatal("-domain provided but no methods provided that use it")
 	}
 
@@ -267,7 +272,6 @@ func main() {
 		if *flHeader {
 			tasks <- func() (bsw.Results, error) { return bsw.Headers(host) }
 		}
-
 	}
 
 	// Domain based functions will likely require separate blocks and should be added below.
@@ -291,6 +295,10 @@ func main() {
 				tasks <- func() (bsw.Results, error) { return bsw.Dictionary6(*flDomain, sub, blacklist6, *flServerAddr) }
 			}
 		}
+	}
+
+	if *flSRV != false && *flDomain != "" {
+		tasks <- func() (bsw.Results, error) { return bsw.LookupSRV(*flDomain, *flServerAddr) }
 	}
 
 	if *flYandex != "" && *flDomain != "" {
