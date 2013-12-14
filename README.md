@@ -44,6 +44,7 @@ $ sudo cp blacksheepwall /usr/local/bin
                         (CommonName and Subject Alternative Name).
   -viewdns              Lookup each host using viewdns.info's Reverse IP
                         Lookup function.
+  -srv                  Find DNS SRV record and retrieve associated hostname/IP info.
   -fcrdns               Verify results by attempting to retrieve the A or AAAA record for
                         each result previously identified hostname.
   -clean                Print results as unique hostnames for each host.
