@@ -2,7 +2,7 @@ package bsw
 
 // Iterates over a list of common SRV records, returning hostname and IP results for each.
 func SRV(domain, dnsServer string) (Results, error) {
-	results := []Result{}
+	results := Results{}
 	srvrcdarr := [...]string{"_gc._tcp.", "_kerberos._tcp.", "_kerberos._udp.", "_ldap._tcp.",
 		"_test._tcp.", "_sips._tcp.", "_sip._udp.", "_sip._tcp.", "_aix._tcp.",
 		"_aix._tcp.", "_finger._tcp.", "_ftp._tcp.", "_http._tcp.", "_nntp._tcp.",
