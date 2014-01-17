@@ -29,12 +29,13 @@ const usage = `
   -input <string>       Line separated file of networks (CIDR) or 
                         IP Addresses.
   -ipv6	                Look for additional AAAA records where applicable.
-  -domain <string>      Target domain to use for certain tasks.
+  -domain <string>      Target domain to use for certain tasks, can be a
+                        single domain or a file of line separated domains.
   -dictionary <string>  Attempt to retrieve the CNAME and A record for
                         each subdomain in the line separated file.
   -yandex <string>      Provided a Yandex search XML API url. Use the Yandex 
                         search 'rhost:' operator to find subdomains of a 
-                        provided domain..
+                        provided domain.
   -bing	<string>        Provided a base64 encoded API key. Use the Bing search
                         API's 'ip:' operator to lookup hostnames for each host.
   -headers              Perform HTTP(s) requests to each host and look for 
@@ -152,6 +153,20 @@ func main() {
 	}
 	if *flDomain != "" && *flYandex == "" && *flDictFile == "" && *flSRV == false {
 		log.Fatal("-domain provided but no methods provided that use it")
+	}
+
+	// Build list of domains.
+	domains := []string{}
+	if *flDomain != "" {
+		if _, err := os.Stat(*flDomain); os.IsNotExist(err) {
+			domains = append(domains, *flDomain)
+		} else {
+			lines, err := readFileLines(*flDomain)
+			if err != nil {
+				log.Fatal("Error reading " + *flDomain + " " + err.Error())
+			}
+			domains = append(domains, lines...)
+		}
 	}
 
 	// Get first argument that is not an option and turn it into a list of IPs.
@@ -277,32 +292,35 @@ func main() {
 	// Domain based functions will likely require separate blocks and should be added below.
 
 	// Subdomain dictionary guessing.
-	if *flDictFile != "" && *flDomain != "" {
-		nameList, err := readFileLines(*flDictFile)
-		if err != nil {
-			log.Fatal("Error reading " + *flDictFile + " " + err.Error())
-		}
-		// Get an IP for a possible wildcard domain and use it as a blacklist.
-		blacklist := bsw.GetWildCard(*flDomain, *flServerAddr)
-		var blacklist6 string
-		if *flipv6 {
-			blacklist6 = bsw.GetWildCard6(*flDomain, *flServerAddr)
-		}
-		for _, n := range nameList {
-			sub := n
-			tasks <- func() (bsw.Results, error) { return bsw.Dictionary(*flDomain, sub, blacklist, *flServerAddr) }
+	for _, d := range domains {
+		domain := d
+		if *flDictFile != "" {
+			nameList, err := readFileLines(*flDictFile)
+			if err != nil {
+				log.Fatal("Error reading " + *flDictFile + " " + err.Error())
+			}
+			// Get an IP for a possible wildcard domain and use it as a blacklist.
+			blacklist := bsw.GetWildCard(domain, *flServerAddr)
+			var blacklist6 string
 			if *flipv6 {
-				tasks <- func() (bsw.Results, error) { return bsw.Dictionary6(*flDomain, sub, blacklist6, *flServerAddr) }
+				blacklist6 = bsw.GetWildCard6(domain, *flServerAddr)
+			}
+			for _, n := range nameList {
+				sub := n
+				tasks <- func() (bsw.Results, error) { return bsw.Dictionary(domain, sub, blacklist, *flServerAddr) }
+				if *flipv6 {
+					tasks <- func() (bsw.Results, error) { return bsw.Dictionary6(domain, sub, blacklist6, *flServerAddr) }
+				}
 			}
 		}
-	}
 
-	if *flSRV != false && *flDomain != "" {
-		tasks <- func() (bsw.Results, error) { return bsw.SRV(*flDomain, *flServerAddr) }
-	}
+		if *flSRV != false {
+			tasks <- func() (bsw.Results, error) { return bsw.SRV(domain, *flServerAddr) }
+		}
 
-	if *flYandex != "" && *flDomain != "" {
-		tasks <- func() (bsw.Results, error) { return bsw.YandexAPI(*flDomain, *flYandex, *flServerAddr) }
+		if *flYandex != "" {
+			tasks <- func() (bsw.Results, error) { return bsw.YandexAPI(domain, *flYandex, *flServerAddr) }
+		}
 	}
 
 	// Close the tasks channel after all jobs have completed and for each
