@@ -244,6 +244,14 @@ func main() {
 					ip, err := bsw.LookupName(r.Hostname, *flServerAddr)
 					if err == nil && len(ip) > 0 {
 						resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname}] = true
+					} else {
+						cfqdn, err := bsw.LookupCname(r.Hostname, *flServerAddr)
+						if err == nil && len(cfqdn) > 0 {
+							ip, err = bsw.LookupName(cfqdn, *flServerAddr)
+							if err == nil && len(ip) > 0 {
+								resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname}] = true
+							}
+						}
 					}
 					ip, err = bsw.LookupName6(r.Hostname, *flServerAddr)
 					if err == nil && len(ip) > 0 {
