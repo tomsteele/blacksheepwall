@@ -9,25 +9,25 @@ import (
 )
 
 type bingMessage struct {
-	D bingResults
+	D bingResults `json:"D"`
 }
 
 type bingResults struct {
-	Results []bingResult
+	Results []bingResult `json:"Results"`
 }
 
 type bingResult struct {
-	Metadata    bingMetadata
-	ID          string
-	Title       string
-	Description string
-	DisplayURL  string
-	URL         string
+	Metadata    bingMetadata `json:"__Metadata"`
+	ID          string       `json:"id"`
+	Title       string       `json:"Title"`
+	Description string       `json:"Description"`
+	DisplayURL  string       `json:"DisplayUrl"`
+	URL         string       `json:"Url"`
 }
 
 type bingMetadata struct {
-	Uri  string
-	Type string
+	Uri  string `json:"Uri"`
+	Type string `json:"Type"`
 }
 
 const azureURL = "https://api.datamarket.azure.com"
@@ -78,7 +78,7 @@ func BingAPI(ip, key, path string) (Results, error) {
 	if err != nil {
 		return results, err
 	}
-	var m bingMessage
+	m := &bingMessage{}
 	err = json.Unmarshal(body, &m)
 	if err != nil {
 		return results, err
