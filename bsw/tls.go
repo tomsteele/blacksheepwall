@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// Attempts connection to an IP using TLS on port 443, and if successfull, will parse the server
+// TLS attempts connection to an IP using TLS on port 443, and if successfull, will parse the server
 // certificate for CommonName and SubjectAlt names.
 func TLS(ip string) (Results, error) {
 	results := Results{}

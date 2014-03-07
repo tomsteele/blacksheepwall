@@ -56,13 +56,13 @@ const usage = `
 
 // Processes a list of IP addresses or networks in CIDR format.
 // Returning a list of all possible IP addresses.
-func linesToIpList(lines []string) ([]string, error) {
+func linesToIPList(lines []string) ([]string, error) {
 	ipList := []string{}
 	for _, line := range lines {
 		if net.ParseIP(line) != nil {
 			ipList = append(ipList, line)
 		} else if ip, network, err := net.ParseCIDR(line); err == nil {
-			for ip := ip.Mask(network.Mask); network.Contains(ip); increaseIp(ip) {
+			for ip := ip.Mask(network.Mask); network.Contains(ip); increaseIP(ip) {
 				ipList = append(ipList, ip.String())
 			}
 		} else {
@@ -73,7 +73,7 @@ func linesToIpList(lines []string) ([]string, error) {
 }
 
 // Increases an IP by a single address.
-func increaseIp(ip net.IP) {
+func increaseIP(ip net.IP) {
 	for j := len(ip) - 1; j >= 0; j-- {
 		ip[j]++
 		if ip[j] > 0 {
@@ -109,11 +109,11 @@ func main() {
 		flDebug       = flag.Bool("debug", false, "")
 		flipv6        = flag.Bool("ipv6", false, "")
 		flServerAddr  = flag.String("server", "8.8.8.8", "")
-		flIpFile      = flag.String("input", "", "")
+		flIPFile      = flag.String("input", "", "")
 		flReverse     = flag.Bool("reverse", false, "")
 		flHeader      = flag.Bool("headers", false, "")
 		flTLS         = flag.Bool("tls", false, "")
-		flViewDnsInfo = flag.Bool("viewdns", false, "")
+		flViewDNSInfo = flag.Bool("viewdns", false, "")
 		flSRV         = flag.Bool("srv", false, "")
 		flBing        = flag.String("bing", "", "")
 		flYandex      = flag.String("yandex", "", "")
@@ -122,7 +122,7 @@ func main() {
 		flFcrdns      = flag.Bool("fcrdns", false, "")
 		flClean       = flag.Bool("clean", false, "")
 		flCsv         = flag.Bool("csv", false, "")
-		flJson        = flag.Bool("json", false, "")
+		flJSON        = flag.Bool("json", false, "")
 	)
 	flag.Usage = func() { fmt.Print(usage) }
 	flag.Parse()
@@ -139,7 +139,7 @@ func main() {
 	var flNetwork string
 
 	// Verify that some sort of work load was given in commands.
-	if *flIpFile == "" && *flDomain == "" && len(flag.Args()) < 1 {
+	if *flIPFile == "" && *flDomain == "" && len(flag.Args()) < 1 {
 		log.Fatal("You didn't provide any work for me to do")
 	}
 	if *flYandex != "" && *flDomain == "" {
@@ -172,7 +172,7 @@ func main() {
 	// Get first argument that is not an option and turn it into a list of IPs.
 	if len(flag.Args()) > 0 {
 		flNetwork = flag.Arg(0)
-		list, err := linesToIpList([]string{flNetwork})
+		list, err := linesToIPList([]string{flNetwork})
 		if err != nil {
 			log.Fatal(err.Error())
 		}
@@ -182,12 +182,12 @@ func main() {
 	// If file given as -input, read lines and turn each possible IP or network into
 	// a list of IPs. Appends list to ipAddrList. Will fail fatally if line in file
 	// is not a valid IP or CIDR range.
-	if *flIpFile != "" {
-		lines, err := readFileLines(*flIpFile)
+	if *flIPFile != "" {
+		lines, err := readFileLines(*flIPFile)
 		if err != nil {
-			log.Fatal("Error reading " + *flIpFile + " " + err.Error())
+			log.Fatal("Error reading " + *flIPFile + " " + err.Error())
 		}
-		list, err := linesToIpList(lines)
+		list, err := linesToIPList(lines)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
@@ -286,8 +286,8 @@ func main() {
 		if *flTLS {
 			tasks <- func() (bsw.Results, error) { return bsw.TLS(host) }
 		}
-		if *flViewDnsInfo {
-			tasks <- func() (bsw.Results, error) { return bsw.ViewDnsInfo(host) }
+		if *flViewDNSInfo {
+			tasks <- func() (bsw.Results, error) { return bsw.ViewDNSInfo(host) }
 		}
 		if *flBing != "" && bingPath != "" {
 			tasks <- func() (bsw.Results, error) { return bsw.BingAPI(host, *flBing, bingPath) }
@@ -345,13 +345,13 @@ func main() {
 
 	// Create a results slice from the unique set in resMap. Allows for sorting.
 	results := bsw.Results{}
-	for k, _ := range resMap {
+	for k := range resMap {
 		results = append(results, k)
 	}
 	sort.Sort(results)
 
 	switch {
-	case *flJson:
+	case *flJSON:
 		j, _ := json.MarshalIndent(results, "", "    ")
 		fmt.Println(string(j))
 	case *flCsv:

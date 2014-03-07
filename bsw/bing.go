@@ -17,12 +17,12 @@ type bingResults struct {
 }
 
 type bingResult struct {
-	__metadata  bingMetadata
+	Metadata    bingMetadata
 	ID          string
 	Title       string
 	Description string
-	DisplayUrl  string
-	Url         string
+	DisplayURL  string
+	URL         string
 }
 
 type bingMetadata struct {
@@ -30,18 +30,18 @@ type bingMetadata struct {
 	Type string
 }
 
-const azureUrl = "https://api.datamarket.azure.com"
+const azureURL = "https://api.datamarket.azure.com"
 
-// Attempts an authenticated search request to two different Bing API paths. If and when a
+// FindBingSearchPath attempts an authenticated search request to two different Bing API paths. If and when a
 // search is successfull, that path will be returned. If no path is valid this function
 // returns an error.
 func FindBingSearchPath(key string) (string, error) {
-	var paths = []string{"/Data.ashx/Bing/Search/v1/Web", "/Data.ashx/Bing/SearchWeb/v1/Web"}
-	var query = "?Query=%27I<3BSW%27"
+	paths := []string{"/Data.ashx/Bing/Search/v1/Web", "/Data.ashx/Bing/SearchWeb/v1/Web"}
+	query := "?Query=%27I<3BSW%27"
 	for _, path := range paths {
-		var fullUrl = azureUrl + path + query
+		fullURL := azureURL + path + query
 		client := &http.Client{}
-		req, err := http.NewRequest("GET", fullUrl, nil)
+		req, err := http.NewRequest("GET", fullURL, nil)
 		if err != nil {
 			return "", err
 		}
@@ -54,17 +54,17 @@ func FindBingSearchPath(key string) (string, error) {
 			return path, nil
 		}
 	}
-	return "", errors.New("Invalid Bing API key")
+	return "", errors.New("invalid Bing API key")
 }
 
-// Uses the Bing search API and 'ip' search operator to find alternate hostnames for
+// BingAPI uses the Bing search API and 'ip' search operator to find alternate hostnames for
 // a single IP.
 func BingAPI(ip, key, path string) (Results, error) {
 	results := Results{}
-	var query = "?Query=%27ip:" + ip + "%27&$top=50&Adult=%27off%27&$format=json"
-	var fullUrl = azureUrl + path + query
+	query := "?Query=%27ip:" + ip + "%27&$top=50&Adult=%27off%27&$format=json"
+	fullURL := azureURL + path + query
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", fullUrl, nil)
+	req, err := http.NewRequest("GET", fullURL, nil)
 	if err != nil {
 		return results, err
 	}
@@ -84,7 +84,7 @@ func BingAPI(ip, key, path string) (Results, error) {
 		return results, err
 	}
 	for _, res := range m.D.Results {
-		u, err := url.Parse(res.Url)
+		u, err := url.Parse(res.URL)
 		if err == nil {
 			results = append(results, Result{Source: "Bing API", IP: ip, Hostname: u.Host})
 		}

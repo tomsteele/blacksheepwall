@@ -7,15 +7,15 @@ import (
 	"strings"
 )
 
-// Uses Yandex XML API and the 'rhost' search operator to find subdomains of a
+// YandexAPI uses Yandex XML API and the 'rhost' search operator to find subdomains of a
 // given domain.
-func YandexAPI(domain, apiUrl, serverAddr string) (Results, error) {
+func YandexAPI(domain, apiURL, serverAddr string) (Results, error) {
 	results := Results{}
-	var xmlTemplate = "<?xml version='1.0' encoding='UTF-8'?><request><query>%s</query><sortby>rlv</sortby><maxpassages>1</maxpassages><page>0</page><groupings><groupby attr=\" \" mode=\"flat\" groups-on-page=\"100\" docs-in-group=\"1\" /></groupings></request>"
+	xmlTemplate := "<?xml version='1.0' encoding='UTF-8'?><request><query>%s</query><sortby>rlv</sortby><maxpassages>1</maxpassages><page>0</page><groupings><groupby attr=\" \" mode=\"flat\" groups-on-page=\"100\" docs-in-group=\"1\" /></groupings></request>"
 	parts := strings.Split(domain, ".")
 	var query = "rhost:" + parts[1] + "." + parts[0] + ".*"
 	postBody := fmt.Sprintf(xmlTemplate, query)
-	resp, err := http.Post(apiUrl, "text/xml", strings.NewReader(postBody))
+	resp, err := http.Post(apiURL, "text/xml", strings.NewReader(postBody))
 	if err != nil {
 		return results, err
 	}

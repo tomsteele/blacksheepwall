@@ -9,12 +9,12 @@ import (
 	"time"
 )
 
-// Using http(s), attempt to connect to an IP. If connection is successfull return any hostnames from the possible
+// Headers uses attempts to connect to IP over http(s). If connection is successfull return any hostnames from the possible
 // 'Location' headers.
 func Headers(ip string) (Results, error) {
 	results := []Result{}
 	for _, proto := range []string{"http", "https"} {
-		if host := hostnameFromHttpLocationHeader(ip, proto); host != "" {
+		if host := hostnameFromHTTPLocationHeader(ip, proto); host != "" {
 			results = append(results, Result{Source: "Headers", IP: ip, Hostname: host})
 		}
 	}
@@ -22,7 +22,7 @@ func Headers(ip string) (Results, error) {
 }
 
 // Performs http(s) request and parses possible 'Location' headers.
-func hostnameFromHttpLocationHeader(ip, protocol string) string {
+func hostnameFromHTTPLocationHeader(ip, protocol string) string {
 	req, err := http.NewRequest("GET", protocol+"://"+ip, nil)
 	if err != nil {
 		return ""

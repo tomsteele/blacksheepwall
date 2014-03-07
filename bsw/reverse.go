@@ -1,6 +1,6 @@
 package bsw
 
-// Uses LookupIP to get PTR record for an IP.
+// Reverse uses LookupIP to get PTR record for an IP.
 func Reverse(ip, serverAddr string) (Results, error) {
 	results := Results{}
 	hostname, err := LookupIP(ip, serverAddr)

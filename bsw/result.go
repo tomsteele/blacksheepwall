@@ -8,12 +8,14 @@ import (
 	"net"
 )
 
+// Result is used to store a single IP and Hostname record.
 type Result struct {
 	Source   string `json:"src"`
 	IP       string `json:"ip"`
 	Hostname string `json:"hostname"`
 }
 
+// Results is a slice of Result.
 type Results []Result
 
 func (r Results) Len() int      { return len(r) }
