@@ -7,6 +7,8 @@ func Reverse(ip, serverAddr string) (Results, error) {
 	if err != nil {
 		return results, err
 	}
-	results = append(results, Result{Source: "Reverse", IP: ip, Hostname: hostname})
+    for _, host := range hostname {
+	   results = append(results, Result{Source: "Reverse", IP: ip, Hostname: host})
+    }
 	return results, nil
 }

@@ -9,7 +9,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/tomsteele/blacksheepwall/bsw"
+	"blacksheepwall/bsw"
 	"log"
 	"net"
 	"os"
@@ -24,30 +24,31 @@ const usage = `
   -h, --help            Show Usage and exit.
   -version              Show version and exit.
   -debug                Enable debugging and show errors returned from tasks.
+  -timeout              Maximum timeout in seconds for SOCKET connections.  [default .5 seconds]
   -concurrency <int>    Max amount of concurrent tasks.    [default: 100]
   -server <string>      DNS server address.    [default: "8.8.8.8"]
   -input <string>       Line separated file of networks (CIDR) or 
-                        IP Addresses.
-  -ipv6	                Look for additional AAAA records where applicable.
+						IP Addresses.
+  -ipv6                 Look for additional AAAA records where applicable.
   -domain <string>      Target domain to use for certain tasks, can be a
-                        single domain or a file of line separated domains.
+						single domain or a file of line separated domains.
   -dictionary <string>  Attempt to retrieve the CNAME and A record for
-                        each subdomain in the line separated file.
+						each subdomain in the line separated file.
   -yandex <string>      Provided a Yandex search XML API url. Use the Yandex 
-                        search 'rhost:' operator to find subdomains of a 
-                        provided domain.
-  -bing	<string>        Provided a base64 encoded API key. Use the Bing search
-                        API's 'ip:' operator to lookup hostnames for each host.
+						search 'rhost:' operator to find subdomains of a 
+						provided domain.
+  -bing <string>        Provided a base64 encoded API key. Use the Bing search
+						API's 'ip:' operator to lookup hostnames for each host.
   -headers              Perform HTTP(s) requests to each host and look for 
-                        hostnames in a possible Location header.
+						hostnames in a possible Location header.
   -reverse              Retrieve the PTR for each host.
   -tls                  Attempt to retrieve names from TLS certificates 
-                        (CommonName and Subject Alternative Name).
+						(CommonName and Subject Alternative Name).
   -viewdns              Lookup each host using viewdns.info's Reverse IP
-                        Lookup function.
-  -srv 			Find DNS SRV record and retrieve associated hostname/IP info.
+						Lookup function.
+  -srv          Find DNS SRV record and retrieve associated hostname/IP info.
   -fcrdns               Verify results by attempting to retrieve the A or AAAA record for
-                        each result previously identified hostname.
+						each result previously identified hostname.
   -clean                Print results as unique hostnames for each host.
   -csv                  Print results in csv format.
   -json                 Print results as JSON.
@@ -105,6 +106,7 @@ func main() {
 	// usage variable above.
 	var (
 		flVersion     = flag.Bool("version", false, "")
+		flTimeout     = flag.Int64("timeout", 600, "")
 		flConcurrency = flag.Int("concurrency", 100, "")
 		flDebug       = flag.Bool("debug", false, "")
 		flipv6        = flag.Bool("ipv6", false, "")
@@ -130,6 +132,12 @@ func main() {
 	if *flVersion {
 		fmt.Println("blacksheepwall version ", bsw.VERSION)
 		os.Exit(0)
+	}
+
+	// Modify timeout to Milliseconds for function calls
+	if *flTimeout != 600 {
+		*flTimeout = *flTimeout * 1000
+		fmt.Printf("\nTimeout: %v\n", *flTimeout)
 	}
 
 	// Holds all IP addresses for testing.
@@ -284,7 +292,7 @@ func main() {
 			tasks <- func() (bsw.Results, error) { return bsw.Reverse(host, *flServerAddr) }
 		}
 		if *flTLS {
-			tasks <- func() (bsw.Results, error) { return bsw.TLS(host) }
+			tasks <- func() (bsw.Results, error) { return bsw.TLS(host,*flTimeout) }
 		}
 		if *flViewDNSInfo {
 			tasks <- func() (bsw.Results, error) { return bsw.ViewDNSInfo(host) }
@@ -334,6 +342,7 @@ func main() {
 	// Close the tasks channel after all jobs have completed and for each
 	// goroutine in the pool receive an empty message from  tracker.
 	close(tasks)
+	fmt.Printf("Closing Tasks")
 	for i := 0; i < *flConcurrency; i++ {
 		<-tracker
 	}
