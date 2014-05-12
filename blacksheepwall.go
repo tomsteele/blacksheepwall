@@ -28,27 +28,27 @@ const usage = `
   -concurrency <int>    Max amount of concurrent tasks.    [default: 100]
   -server <string>      DNS server address.    [default: "8.8.8.8"]
   -input <string>       Line separated file of networks (CIDR) or 
-						IP Addresses.
+                        IP Addresses.
   -ipv6                 Look for additional AAAA records where applicable.
   -domain <string>      Target domain to use for certain tasks, can be a
-						single domain or a file of line separated domains.
+                        single domain or a file of line separated domains.
   -dictionary <string>  Attempt to retrieve the CNAME and A record for
-						each subdomain in the line separated file.
+                        each subdomain in the line separated file.
   -yandex <string>      Provided a Yandex search XML API url. Use the Yandex 
-						search 'rhost:' operator to find subdomains of a 
-						provided domain.
+                        search 'rhost:' operator to find subdomains of a 
+                        provided domain.
   -bing <string>        Provided a base64 encoded API key. Use the Bing search
-						API's 'ip:' operator to lookup hostnames for each host.
+                        API's 'ip:' operator to lookup hostnames for each host.
   -headers              Perform HTTP(s) requests to each host and look for 
-						hostnames in a possible Location header.
+                        hostnames in a possible Location header.
   -reverse              Retrieve the PTR for each host.
   -tls                  Attempt to retrieve names from TLS certificates 
-						(CommonName and Subject Alternative Name).
+                        (CommonName and Subject Alternative Name).
   -viewdns              Lookup each host using viewdns.info's Reverse IP
-						Lookup function.
-  -srv          Find DNS SRV record and retrieve associated hostname/IP info.
+                        Lookup function.
+  -srv                  Find DNS SRV record and retrieve associated hostname/IP info.
   -fcrdns               Verify results by attempting to retrieve the A or AAAA record for
-						each result previously identified hostname.
+                        each result previously identified hostname.
   -clean                Print results as unique hostnames for each host.
   -csv                  Print results in csv format.
   -json                 Print results as JSON.
