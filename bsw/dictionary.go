@@ -24,26 +24,27 @@ func GetWildCard6(domain, serverAddr string) string {
 
 // Dictionary attempts to get an A and CNAME record for a sub domain of domain.
 func Dictionary(domain, subname, blacklist, serverAddr string) (Results, error) {
+	errtask := []Result{Result{Source: "DictionaryV4"}}
 	results := Results{}
 	fqdn := subname + "." + domain
 	ip, err := LookupName(fqdn, serverAddr)
 	if err != nil {
 		cfqdn, err := LookupCname(fqdn, serverAddr)
 		if err != nil {
-			return results, err
+			return errtask, err
 		}
 		ip, err = LookupName(cfqdn, serverAddr)
 		if err != nil {
-			return results, err
+			return errtask, err
 		}
 		if ip == blacklist {
-			return results, errors.New("returned IP in blackslist")
+			return errtask, errors.New("returned IP in blackslist")
 		}
 		results = append(results, Result{Source: "Dictionary-CNAME", IP: ip, Hostname: fqdn}, Result{Source: "Dictionary-CNAME", IP: ip, Hostname: cfqdn})
 		return results, nil
 	}
 	if ip == blacklist {
-		return results, errors.New("returned IP in blacklist")
+		return errtask, errors.New("returned IP in blacklist")
 	}
 	results = append(results, Result{Source: "Dictionary", IP: ip, Hostname: fqdn})
 	return results, nil
@@ -51,14 +52,15 @@ func Dictionary(domain, subname, blacklist, serverAddr string) (Results, error) 
 
 // Dictionary6 attempts to get an AAAA record for a sub domain of a domain.
 func Dictionary6(domain, subname, blacklist, serverAddr string) (Results, error) {
+	errtask := []Result{Result{Source: "DictionaryV6"}}
 	results := Results{}
 	fqdn := subname + "." + domain
 	ip, err := LookupName6(fqdn, serverAddr)
 	if err != nil {
-		return results, err
+		return errtask, err
 	}
 	if ip == blacklist {
-		return results, errors.New("returned IP in blacklist")
+		return errtask, errors.New("returned IP in blacklist")
 	}
 	results = append(results, Result{Source: "Dictionary IPv6", IP: ip, Hostname: fqdn})
 	return results, nil

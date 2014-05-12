@@ -137,7 +137,6 @@ func main() {
 	// Modify timeout to Milliseconds for function calls
 	if *flTimeout != 600 {
 		*flTimeout = *flTimeout * 1000
-		fmt.Printf("\nTimeout: %v\n", *flTimeout)
 	}
 
 	// Holds all IP addresses for testing.
@@ -231,7 +230,7 @@ func main() {
 					os.Stderr.WriteString("\rWorking /")
 				}
 				if err != nil && *flDebug {
-					log.Println(err.Error())
+					log.Printf("%v: %v", result[0].Source, err.Error())
 				}
 				if err == nil {
 					res <- result
@@ -292,7 +291,7 @@ func main() {
 			tasks <- func() (bsw.Results, error) { return bsw.Reverse(host, *flServerAddr) }
 		}
 		if *flTLS {
-			tasks <- func() (bsw.Results, error) { return bsw.TLS(host,*flTimeout) }
+			tasks <- func() (bsw.Results, error) { return bsw.TLS(host, *flTimeout) }
 		}
 		if *flViewDNSInfo {
 			tasks <- func() (bsw.Results, error) { return bsw.ViewDNSInfo(host) }
@@ -301,7 +300,7 @@ func main() {
 			tasks <- func() (bsw.Results, error) { return bsw.BingAPI(host, *flBing, bingPath) }
 		}
 		if *flHeader {
-			tasks <- func() (bsw.Results, error) { return bsw.Headers(host) }
+			tasks <- func() (bsw.Results, error) { return bsw.Headers(host, *flTimeout) }
 		}
 	}
 
