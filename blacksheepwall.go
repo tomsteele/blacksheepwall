@@ -9,7 +9,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"blacksheepwall/bsw"
+	"github.com/tomsteele/blacksheepwall/bsw"
 	"log"
 	"net"
 	"os"
