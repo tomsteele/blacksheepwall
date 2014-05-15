@@ -4,28 +4,20 @@ import (
 	"errors"
 	"github.com/miekg/dns"
 	"strings"
+	"net"
 )
 
 // LookupIP returns hostname from PTR record or error.
-func LookupIP(ip, serverAddr string) (string, error) {
-	fqdn, err := dns.ReverseAddr(ip)
+func LookupIP(ip, serverAddr string) ([]string, error) {
+	fqdn := []string{}
+	result, err := net.LookupAddr(ip)
 	if err != nil {
-		return "", err
+		return fqdn, err
 	}
-	m := &dns.Msg{}
-	m.SetQuestion(fqdn, dns.TypePTR)
-	in, err := dns.Exchange(m, serverAddr+":53")
-	if err != nil {
-		return "", err
+	for _, hostname := range result {
+		fqdn = append(fqdn, strings.TrimRight(hostname, "."))
 	}
-	if len(in.Answer) < 1 {
-		return "", errors.New("no Answer")
-	}
-	if a, ok := in.Answer[0].(*dns.PTR); ok {
-		return strings.TrimRight(a.Ptr, "."), nil
-	}
-	return "", errors.New("no PTR record returned")
-
+	return fqdn, nil
 }
 
 // LookupName returns IPv4 address from A record or error.

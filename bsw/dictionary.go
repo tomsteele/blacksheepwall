@@ -1,7 +1,7 @@
 package bsw
 
 import (
-	"errors"
+	"fmt"
 )
 
 const wildcardsub = "youmustcontstuctmoreplyons."
@@ -23,43 +23,45 @@ func GetWildCard6(domain, serverAddr string) string {
 }
 
 // Dictionary attempts to get an A and CNAME record for a sub domain of domain.
-func Dictionary(domain, subname, blacklist, serverAddr string) (Results, error) {
+func Dictionary(domain, subname, blacklist, serverAddr string) (string, Results, error) {
+	task := "Dictionary IPv4"
 	results := Results{}
 	fqdn := subname + "." + domain
 	ip, err := LookupName(fqdn, serverAddr)
 	if err != nil {
 		cfqdn, err := LookupCname(fqdn, serverAddr)
 		if err != nil {
-			return results, err
+			return task, results, err
 		}
 		ip, err = LookupName(cfqdn, serverAddr)
 		if err != nil {
-			return results, err
+			return task, results, err
 		}
 		if ip == blacklist {
-			return results, errors.New("returned IP in blackslist")
+			return task, results, fmt.Errorf("%v: returned IP in blackslist", ip)
 		}
 		results = append(results, Result{Source: "Dictionary-CNAME", IP: ip, Hostname: fqdn}, Result{Source: "Dictionary-CNAME", IP: ip, Hostname: cfqdn})
-		return results, nil
+		return task, results, nil
 	}
 	if ip == blacklist {
-		return results, errors.New("returned IP in blacklist")
+		return task, results, fmt.Errorf("%v: returned IP in blacklist", ip)
 	}
-	results = append(results, Result{Source: "Dictionary", IP: ip, Hostname: fqdn})
-	return results, nil
+	results = append(results, Result{Source: task, IP: ip, Hostname: fqdn})
+	return task, results, nil
 }
 
 // Dictionary6 attempts to get an AAAA record for a sub domain of a domain.
-func Dictionary6(domain, subname, blacklist, serverAddr string) (Results, error) {
+func Dictionary6(domain, subname, blacklist, serverAddr string) (string, Results, error) {
+	task := "Dictionary IPv6"
 	results := Results{}
 	fqdn := subname + "." + domain
 	ip, err := LookupName6(fqdn, serverAddr)
 	if err != nil {
-		return results, err
+		return task, results, err
 	}
 	if ip == blacklist {
-		return results, errors.New("returned IP in blacklist")
+		return task, results, fmt.Errorf("%v: returned IP in blacklist", ip)
 	}
-	results = append(results, Result{Source: "Dictionary IPv6", IP: ip, Hostname: fqdn})
-	return results, nil
+	results = append(results, Result{Source: task, IP: ip, Hostname: fqdn})
+	return task, results, nil
 }

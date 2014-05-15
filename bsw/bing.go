@@ -59,35 +59,36 @@ func FindBingSearchPath(key string) (string, error) {
 
 // BingAPI uses the Bing search API and 'ip' search operator to find alternate hostnames for
 // a single IP.
-func BingAPI(ip, key, path string) (Results, error) {
+func BingAPI(ip, key, path string) (string, Results, error) {
+	task := "Bing API"
 	results := Results{}
 	query := "?Query=%27ip:" + ip + "%27&$top=50&Adult=%27off%27&$format=json"
 	fullURL := azureURL + path + query
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", fullURL, nil)
 	if err != nil {
-		return results, err
+		return task, results, err
 	}
 	req.SetBasicAuth(key, key)
 	resp, err := client.Do(req)
 	if err != nil {
-		return results, err
+		return task, results, err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return results, err
+		return task, results, err
 	}
 	m := &bingMessage{}
 	err = json.Unmarshal(body, &m)
 	if err != nil {
-		return results, err
+		return task, results, err
 	}
 	for _, res := range m.D.Results {
 		u, err := url.Parse(res.URL)
 		if err == nil {
-			results = append(results, Result{Source: "Bing API", IP: ip, Hostname: u.Host})
+			results = append(results, Result{Source: task, IP: ip, Hostname: u.Host})
 		}
 	}
-	return results, nil
+	return task, results, nil
 }

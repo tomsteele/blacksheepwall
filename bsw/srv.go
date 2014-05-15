@@ -1,7 +1,8 @@
 package bsw
 
 // SRV iterates over a list of common SRV records, returning hostname and IP results for each.
-func SRV(domain, dnsServer string) (Results, error) {
+func SRV(domain, dnsServer string) (string, Results, error) {
+	task := "SRV"
 	results := Results{}
 	srvrcdarr := [...]string{"_gc._tcp.", "_kerberos._tcp.", "_kerberos._udp.", "_ldap._tcp.",
 		"_test._tcp.", "_sips._tcp.", "_sip._udp.", "_sip._tcp.", "_aix._tcp.",
@@ -28,7 +29,7 @@ func SRV(domain, dnsServer string) (Results, error) {
 		if err != nil {
 			continue
 		}
-		results = append(results, Result{Source: "SRV", IP: ip, Hostname: srvTarget})
+		results = append(results, Result{Source: task, IP: ip, Hostname: srvTarget})
 	}
-	return results, nil
+	return task, results, nil
 }

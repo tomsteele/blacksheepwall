@@ -25,6 +25,7 @@ $ sudo cp blacksheepwall /usr/local/bin
   -h, --help            Show Usage and exit.
   -version              Show version and exit.
   -debug                Enable debugging and show errors returned from tasks.
+  -timeout              Maximum timeout in seconds for SOCKET connections.  [default .5 seconds]
   -concurrency <int>    Max amount of concurrent tasks.    [default: 100]
   -server <string>      DNS server address.    [default: "8.8.8.8"]
   -input <string>       Line separated file of networks (CIDR) or 
