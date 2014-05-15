@@ -7,22 +7,23 @@ import (
 	"net/url"
 	"regexp"
 	"time"
+	"fmt"
 )
 
 // Headers uses attempts to connect to IP over http(s). If connection is successfull return any hostnames from the possible
 // 'Location' headers.
-func Headers(ip string, timeout int64) (Results, error) {
-	errtask := []Result{Result{Source: "Headers"}}
+func Headers(ip string, timeout int64) (string, Results, error) {
+	task := "Headers"
 	results := []Result{}
 	for _, proto := range []string{"http", "https"} {
 		host, err := hostnameFromHTTPLocationHeader(ip, proto, timeout)
 		if err != nil {
-			return errtask, err
+			return task, results, err
 		} else if host != "" {
-			results = append(results, Result{Source: "Headers", IP: ip, Hostname: host})
+			results = append(results, Result{Source: task, IP: ip, Hostname: host})
 		}
 	}
-	return results, nil
+	return task, results, nil
 }
 
 // Performs http(s) request and parses possible 'Location' headers.
@@ -51,7 +52,7 @@ func hostnameFromHTTPLocationHeader(ip, protocol string, timeout int64) (string,
 		if m, _ := regexp.Match("[a-zA-Z]+", []byte(host)); m == true {
 			return host, nil
 		}
-		return "", nil
+		return "", fmt.Errorf("%v: unsuccessful header match", ip)
 	}
-	return "", nil
+	return "", fmt.Errorf("%v: unsuccessful header match", ip)
 }

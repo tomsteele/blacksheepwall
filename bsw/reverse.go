@@ -1,15 +1,15 @@
 package bsw
 
 // Reverse uses LookupIP to get PTR record for an IP.
-func Reverse(ip, serverAddr string) (Results, error) {
-    errtask := []Result{Result{Source: "Reverse"}}
+func Reverse(ip, serverAddr string) (string, Results, error) {
+    task := "Reverse"
 	results := Results{}
 	hostname, err := LookupIP(ip, serverAddr)
 	if err != nil {
-		return errtask, err
+		return task, results, err
 	}
     for _, host := range hostname {
-	   results = append(results, Result{Source: "Reverse", IP: ip, Hostname: host})
+	   results = append(results, Result{Source: task, IP: ip, Hostname: host})
     }
-	return results, nil
+	return task, results, nil
 }

@@ -27,22 +27,22 @@ const usage = `
   -timeout              Maximum timeout in seconds for SOCKET connections.  [default .5 seconds]
   -concurrency <int>    Max amount of concurrent tasks.    [default: 100]
   -server <string>      DNS server address.    [default: "8.8.8.8"]
-  -input <string>       Line separated file of networks (CIDR) or 
+  -input <string>       Line separated file of networks (CIDR) or
                         IP Addresses.
   -ipv6                 Look for additional AAAA records where applicable.
   -domain <string>      Target domain to use for certain tasks, can be a
                         single domain or a file of line separated domains.
   -dictionary <string>  Attempt to retrieve the CNAME and A record for
                         each subdomain in the line separated file.
-  -yandex <string>      Provided a Yandex search XML API url. Use the Yandex 
-                        search 'rhost:' operator to find subdomains of a 
+  -yandex <string>      Provided a Yandex search XML API url. Use the Yandex
+                        search 'rhost:' operator to find subdomains of a
                         provided domain.
   -bing <string>        Provided a base64 encoded API key. Use the Bing search
                         API's 'ip:' operator to lookup hostnames for each host.
-  -headers              Perform HTTP(s) requests to each host and look for 
+  -headers              Perform HTTP(s) requests to each host and look for
                         hostnames in a possible Location header.
   -reverse              Retrieve the PTR for each host.
-  -tls                  Attempt to retrieve names from TLS certificates 
+  -tls                  Attempt to retrieve names from TLS certificates
                         (CommonName and Subject Alternative Name).
   -viewdns              Lookup each host using viewdns.info's Reverse IP
                         Lookup function.
@@ -98,7 +98,7 @@ func readFileLines(path string) ([]string, error) {
 	return lines, scanner.Err()
 }
 
-type task func() (bsw.Results, error)
+type task func() (string, bsw.Results, error)
 type empty struct{}
 
 func main() {
@@ -221,18 +221,23 @@ func main() {
 		go func() {
 			var c = 0
 			for def := range tasks {
-				result, err := def()
-				if m := c % 2; m == 0 {
-					c = 3
-					os.Stderr.WriteString("\rWorking \\")
-				} else {
-					c = 2
-					os.Stderr.WriteString("\rWorking /")
+				task, result, err := def()
+				if *flDebug == false {
+					if m := c % 2; m == 0 {
+						c = 3
+						os.Stderr.WriteString("\rWorking \\")
+					} else {
+						c = 2
+						os.Stderr.WriteString("\rWorking /")
+					}
 				}
 				if err != nil && *flDebug {
-					log.Printf("%v: %v", result[0].Source, err.Error())
+					log.Printf("%v: %v", task, err.Error())
 				}
 				if err == nil {
+					if *flDebug == true {
+						log.Printf("%v: %v %v: task completed successfully\n", task, result[0].Hostname, result[0].IP)
+					}
 					res <- result
 				}
 			}
@@ -288,19 +293,19 @@ func main() {
 	for _, h := range ipAddrList {
 		host := h
 		if *flReverse {
-			tasks <- func() (bsw.Results, error) { return bsw.Reverse(host, *flServerAddr) }
+			tasks <- func() (string, bsw.Results, error) { return bsw.Reverse(host, *flServerAddr) }
 		}
 		if *flTLS {
-			tasks <- func() (bsw.Results, error) { return bsw.TLS(host, *flTimeout) }
+			tasks <- func() (string, bsw.Results, error) { return bsw.TLS(host, *flTimeout) }
 		}
 		if *flViewDNSInfo {
-			tasks <- func() (bsw.Results, error) { return bsw.ViewDNSInfo(host) }
+			tasks <- func() (string, bsw.Results, error) { return bsw.ViewDNSInfo(host) }
 		}
 		if *flBing != "" && bingPath != "" {
-			tasks <- func() (bsw.Results, error) { return bsw.BingAPI(host, *flBing, bingPath) }
+			tasks <- func() (string, bsw.Results, error) { return bsw.BingAPI(host, *flBing, bingPath) }
 		}
 		if *flHeader {
-			tasks <- func() (bsw.Results, error) { return bsw.Headers(host, *flTimeout) }
+			tasks <- func() (string, bsw.Results, error) { return bsw.Headers(host, *flTimeout) }
 		}
 	}
 
@@ -322,26 +327,25 @@ func main() {
 			}
 			for _, n := range nameList {
 				sub := n
-				tasks <- func() (bsw.Results, error) { return bsw.Dictionary(domain, sub, blacklist, *flServerAddr) }
+				tasks <- func() (string, bsw.Results, error) { return bsw.Dictionary(domain, sub, blacklist, *flServerAddr) }
 				if *flipv6 {
-					tasks <- func() (bsw.Results, error) { return bsw.Dictionary6(domain, sub, blacklist6, *flServerAddr) }
+					tasks <- func() (string, bsw.Results, error) { return bsw.Dictionary6(domain, sub, blacklist6, *flServerAddr) }
 				}
 			}
 		}
 
 		if *flSRV != false {
-			tasks <- func() (bsw.Results, error) { return bsw.SRV(domain, *flServerAddr) }
+			tasks <- func() (string, bsw.Results, error) { return bsw.SRV(domain, *flServerAddr) }
 		}
 
 		if *flYandex != "" {
-			tasks <- func() (bsw.Results, error) { return bsw.YandexAPI(domain, *flYandex, *flServerAddr) }
+			tasks <- func() (string, bsw.Results, error) { return bsw.YandexAPI(domain, *flYandex, *flServerAddr) }
 		}
 	}
 
 	// Close the tasks channel after all jobs have completed and for each
 	// goroutine in the pool receive an empty message from  tracker.
 	close(tasks)
-	fmt.Printf("Closing Tasks")
 	for i := 0; i < *flConcurrency; i++ {
 		<-tracker
 	}
