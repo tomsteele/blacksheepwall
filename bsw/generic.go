@@ -2,7 +2,6 @@ package bsw
 
 import (
 	"errors"
-	"net"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -10,15 +9,26 @@ import (
 
 // LookupIP returns hostname from PTR record or error.
 func LookupIP(ip, serverAddr string) ([]string, error) {
-	fqdn := []string{}
-	result, err := net.LookupAddr(ip)
+	names := []string{}
+	m := &dns.Msg{}
+	ipArpa, err := dns.ReverseAddr(ip)
 	if err != nil {
-		return fqdn, err
+		return names, err
 	}
-	for _, hostname := range result {
-		fqdn = append(fqdn, strings.TrimRight(hostname, "."))
+	m.SetQuestion(ipArpa, dns.TypePTR)
+	in, err := dns.Exchange(m, serverAddr+":53")
+	if err != nil {
+		return names, err
 	}
-	return fqdn, nil
+	if len(in.Answer) < 1 {
+		return names, errors.New("no Answer")
+	}
+
+	for _, a := range in.Answer {
+		ptr := a.(*dns.PTR)
+		names = append(names, strings.TrimRight(ptr.Ptr, "."))
+	}
+	return names, nil
 }
 
 // LookupName returns IPv4 address from A record or error.
