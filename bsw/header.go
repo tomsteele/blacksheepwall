@@ -2,12 +2,12 @@ package bsw
 
 import (
 	"crypto/tls"
+	"fmt"
 	"net"
 	"net/http"
 	"net/url"
 	"regexp"
 	"time"
-	"fmt"
 )
 
 // Headers uses attempts to connect to IP over http(s). If connection is successfull return any hostnames from the possible

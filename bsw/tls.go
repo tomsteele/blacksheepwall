@@ -15,7 +15,7 @@ func TLS(ip string, timeout int64) (string, Results, error) {
 	if err != nil {
 		return task, results, err
 	}
-	t := time.Duration(timeout)*time.Millisecond
+	t := time.Duration(timeout) * time.Millisecond
 	if err := tconn.SetDeadline(time.Now().Add(t)); err != nil {
 		return task, results, err
 	}

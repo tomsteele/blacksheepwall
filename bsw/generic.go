@@ -2,9 +2,10 @@ package bsw
 
 import (
 	"errors"
-	"github.com/miekg/dns"
-	"strings"
 	"net"
+	"strings"
+
+	"github.com/miekg/dns"
 )
 
 // LookupIP returns hostname from PTR record or error.

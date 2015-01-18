@@ -1,8 +1,9 @@
 package bsw
 
 import (
-	"github.com/PuerkitoBio/goquery"
 	"net/http"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
 // Very long selector...

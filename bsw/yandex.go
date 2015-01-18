@@ -2,9 +2,10 @@ package bsw
 
 import (
 	"fmt"
-	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"strings"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
 // YandexAPI uses Yandex XML API and the 'rhost' search operator to find subdomains of a
