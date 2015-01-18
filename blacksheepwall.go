@@ -9,12 +9,13 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/tomsteele/blacksheepwall/bsw"
 	"log"
 	"net"
 	"os"
 	"sort"
 	"text/tabwriter"
+
+	"github.com/tomsteele/blacksheepwall/bsw"
 )
 
 const usage = `
@@ -235,7 +236,7 @@ func main() {
 					log.Printf("%v: %v", task, err.Error())
 				}
 				if err == nil {
-					if *flDebug == true {
+					if *flDebug == true && len(result) > 0 {
 						log.Printf("%v: %v %v: task completed successfully\n", task, result[0].Hostname, result[0].IP)
 					}
 					res <- result
