@@ -25,9 +25,15 @@ func LookupIP(ip, serverAddr string) ([]string, error) {
 	}
 
 	for _, a := range in.Answer {
-		ptr := a.(*dns.PTR)
-		names = append(names, strings.TrimRight(ptr.Ptr, "."))
+		if ptr, ok := a.(*dns.PTR); ok {
+			names = append(names, strings.TrimRight(ptr.Ptr, "."))
+		}
 	}
+
+	if len(names) < 1 {
+		return names, errors.New("no PTR")
+	}
+
 	return names, nil
 }
 
