@@ -144,7 +144,6 @@ func main() {
 	ipAddrList := []string{}
 
 	// Used to hold a ip or CIDR range passed as fl.Arg(0).
-	var flNetwork string
 
 	// Verify that some sort of work load was given in commands.
 	if *flIPFile == "" && *flDomain == "" && len(flag.Args()) < 1 {
@@ -179,7 +178,7 @@ func main() {
 
 	// Get first argument that is not an option and turn it into a list of IPs.
 	if len(flag.Args()) > 0 {
-		flNetwork = flag.Arg(0)
+		flNetwork := flag.Arg(0)
 		list, err := linesToIPList([]string{flNetwork})
 		if err != nil {
 			log.Fatal(err.Error())
