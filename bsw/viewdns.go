@@ -16,8 +16,7 @@ const viewDNSSelector = "#null > tbody:nth-child(1) > tr:nth-child(3) > td:nth-c
 func ViewDNSInfo(ip string) (string, Results, error) {
 	task := "viewdns.info"
 	results := Results{}
-	url := "http://viewdns.info/reverseip/?host=" + ip + "&t=1"
-	resp, err := http.Get(url)
+	resp, err := http.Get("http://viewdns.info/reverseip/?host=" + ip + "&t=1")
 	if err != nil {
 		return task, results, err
 	}
@@ -50,8 +49,7 @@ type viewDNSInfoMessage struct {
 func ViewDNSInfoAPI(ip, key string) (string, Results, error) {
 	task := "viewdns.info API"
 	results := Results{}
-	url := "http://pro.viewdns.info/reverseip/?host=" + ip + "&apikey=" + key + "&output=json"
-	resp, err := http.Get(url)
+	resp, err := http.Get("http://pro.viewdns.info/reverseip/?host=" + ip + "&apikey=" + key + "&output=json")
 	if err != nil {
 		return task, results, err
 	}

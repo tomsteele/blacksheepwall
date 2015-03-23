@@ -25,8 +25,8 @@ func TestBing(t *testing.T) {
 		t.Error("bing returned an error")
 		t.Log(err)
 	}
-	if tsk != "Bing" {
-		t.Error("task from Bing was not Bing")
+	if tsk != "bing" {
+		t.Error("task from Bing was not bing")
 	}
 	found := false
 	for _, r := range results {

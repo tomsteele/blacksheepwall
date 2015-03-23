@@ -12,8 +12,7 @@ import (
 func Robtex(ip string) (string, Results, error) {
 	task := "robtex.com"
 	results := Results{}
-	url := "http://www.robtex.com/ip/" + ip + ".html"
-	resp, err := http.Get(url)
+	resp, err := http.Get("http://www.robtex.com/ip/" + ip + ".html")
 	if err != nil {
 		return task, results, err
 	}

@@ -59,15 +59,13 @@ func FindBingSearchPath(key string) (string, error) {
 	return "", errors.New("invalid Bing API key")
 }
 
-// BingAPI uses the Bing search API and 'ip' search operator to find alternate hostnames for
+// BingAPI uses the bing search API and 'ip' search operator to find alternate hostnames for
 // a single IP.
 func BingAPI(ip, key, path string) (string, Results, error) {
-	task := "Bing API"
+	task := "bing API"
 	results := Results{}
-	query := "?Query=%27ip:" + ip + "%27&$top=50&Adult=%27off%27&$format=json"
-	fullURL := azureURL + path + query
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", fullURL, nil)
+	req, err := http.NewRequest("GET", azureURL+path+"?Query=%27ip:"+ip+"%27&$top=50&Adult=%27off%27&$format=json", nil)
 	if err != nil {
 		return task, results, err
 	}
@@ -82,8 +80,7 @@ func BingAPI(ip, key, path string) (string, Results, error) {
 		return task, results, err
 	}
 	m := &bingMessage{}
-	err = json.Unmarshal(body, &m)
-	if err != nil {
+	if err = json.Unmarshal(body, &m); err != nil {
 		return task, results, err
 	}
 	for _, res := range m.D.Results {
@@ -96,15 +93,13 @@ func BingAPI(ip, key, path string) (string, Results, error) {
 }
 
 func Bing(ip string) (string, Results, error) {
-	task := "Bing"
+	task := "bing"
 	results := Results{}
-	fullURL := "http://www.bing.com/search?q=ip:" + ip
-	resp, err := http.Get(fullURL)
+	resp, err := http.Get("http://www.bing.com/search?q=ip:" + ip)
 	if err != nil {
 		return task, results, err
 	}
-	defer resp.Body.Close()
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	doc, err := goquery.NewDocumentFromResponse(resp)
 	if err != nil {
 		return task, results, err
 	}

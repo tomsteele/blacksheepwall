@@ -19,8 +19,7 @@ type logontubeMessage struct {
 func LogonTubeAPI(search string) (string, Results, error) {
 	task := "logontube.com API"
 	results := Results{}
-	url := "http://reverseip.logontube.com/?url=" + search + "&output=json"
-	resp, err := http.Get(url)
+	resp, err := http.Get("http://reverseip.logontube.com/?url=" + search + "&output=json")
 	if err != nil {
 		return task, results, err
 	}
