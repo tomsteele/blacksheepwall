@@ -47,6 +47,7 @@ const usage = `
                         (CommonName and Subject Alternative Name).
   -viewdns              Lookup each host using viewdns.info's Reverse IP
                         Lookup function. Use sparingly as they will block you.
+  -logontube            Lookup each host and/or domain using logontube.com's API.
   -srv                  Find DNS SRV record and retrieve associated hostname/IP info.
   -fcrdns               Verify results by attempting to retrieve the A or AAAA record for
                         each result previously identified hostname.
@@ -117,6 +118,7 @@ func main() {
 		flHeader      = flag.Bool("headers", false, "")
 		flTLS         = flag.Bool("tls", false, "")
 		flViewDNSInfo = flag.Bool("viewdns", false, "")
+		flLogonTube   = flag.Bool("logontube", false, "")
 		flSRV         = flag.Bool("srv", false, "")
 		flBing        = flag.String("bing", "", "")
 		flYandex      = flag.String("yandex", "", "")
@@ -158,7 +160,7 @@ func main() {
 	if *flDomain == "" && *flSRV == true {
 		log.Fatal("SRV lookup requires domain set with -domain")
 	}
-	if *flDomain != "" && *flYandex == "" && *flDictFile == "" && *flSRV == false {
+	if *flDomain != "" && *flYandex == "" && *flDictFile == "" && !*flSRV && !*flLogonTube {
 		log.Fatal("-domain provided but no methods provided that use it")
 	}
 
@@ -301,6 +303,9 @@ func main() {
 		if *flViewDNSInfo {
 			tasks <- func() (string, bsw.Results, error) { return bsw.ViewDNSInfo(host) }
 		}
+		if *flLogonTube {
+			tasks <- func() (string, bsw.Results, error) { return bsw.LogonTubeAPI(host) }
+		}
 		if *flBing != "" && bingPath != "" {
 			tasks <- func() (string, bsw.Results, error) { return bsw.BingAPI(host, *flBing, bingPath) }
 		}
@@ -337,9 +342,11 @@ func main() {
 		if *flSRV != false {
 			tasks <- func() (string, bsw.Results, error) { return bsw.SRV(domain, *flServerAddr) }
 		}
-
 		if *flYandex != "" {
 			tasks <- func() (string, bsw.Results, error) { return bsw.YandexAPI(domain, *flYandex, *flServerAddr) }
+		}
+		if *flLogonTube {
+			tasks <- func() (string, bsw.Results, error) { return bsw.LogonTubeAPI(domain) }
 		}
 	}
 
