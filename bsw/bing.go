@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
 type bingMessage struct {
@@ -91,4 +93,30 @@ func BingAPI(ip, key, path string) (string, Results, error) {
 		}
 	}
 	return task, results, nil
+}
+
+func Bing(ip string) (string, Results, error) {
+	task := "Bing"
+	results := Results{}
+	fullURL := "http://www.bing.com/search?q=ip:" + ip
+	resp, err := http.Get(fullURL)
+	if err != nil {
+		return task, results, err
+	}
+	defer resp.Body.Close()
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return task, results, err
+	}
+	doc.Selection.Find("cite").Each(func(_ int, s *goquery.Selection) {
+		u, err := url.Parse(s.Text())
+		if err == nil && u.Host != "" {
+			results = append(results, Result{
+				Source:   task,
+				IP:       ip,
+				Hostname: u.Host,
+			})
+		}
+	})
+	return task, results, err
 }
