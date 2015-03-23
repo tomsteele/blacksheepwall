@@ -353,7 +353,7 @@ func main() {
 	// Receive and empty message from the result gatherer.
 	<-tracker
 	os.Stderr.WriteString("\r")
-	log.Println("All tasks completed\n")
+	log.Println("All tasks completed")
 
 	// Create a results slice from the unique set in resMap. Allows for sorting.
 	results := bsw.Results{}
