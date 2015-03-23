@@ -35,22 +35,40 @@ const usage = `
                         single domain or a file of line separated domains.
   -dictionary <string>  Attempt to retrieve the CNAME and A record for
                         each subdomain in the line separated file.
+
   -yandex <string>      Provided a Yandex search XML API url. Use the Yandex
                         search 'rhost:' operator to find subdomains of a
                         provided domain.
+
   -bing <string>        Provided a base64 encoded API key. Use the Bing search
                         API's 'ip:' operator to lookup hostnames for each host.
+
+  -bing-html            Use Bing search 'ip:' operator to lookup hostname for each host, only
+                        the first page is scraped. This does not use the API.
+
   -headers              Perform HTTP(s) requests to each host and look for
                         hostnames in a possible Location header.
+
   -reverse              Retrieve the PTR for each host.
+
   -tls                  Attempt to retrieve names from TLS certificates
                         (CommonName and Subject Alternative Name).
-  -viewdns              Lookup each host using viewdns.info's Reverse IP
+
+  -viewdns-html         Lookup each host using viewdns.info's Reverse IP
                         Lookup function. Use sparingly as they will block you.
+
+  -viewdns <string>     Lookup each host using viewdns.info's API  and Reverse IP Lookup function.
+
+  -robtex               Lookup each host using robtex.com
+
   -logontube            Lookup each host and/or domain using logontube.com's API.
+
   -srv                  Find DNS SRV record and retrieve associated hostname/IP info.
+
   -fcrdns               Verify results by attempting to retrieve the A or AAAA record for
                         each result previously identified hostname.
+
+ Output Options:
   -clean                Print results as unique hostnames for each host.
   -csv                  Print results in csv format.
   -json                 Print results as JSON.
@@ -107,27 +125,30 @@ func main() {
 	// Command line options. For usage information see the
 	// usage variable above.
 	var (
-		flVersion     = flag.Bool("version", false, "")
-		flTimeout     = flag.Int64("timeout", 600, "")
-		flConcurrency = flag.Int("concurrency", 100, "")
-		flDebug       = flag.Bool("debug", false, "")
-		flipv6        = flag.Bool("ipv6", false, "")
-		flServerAddr  = flag.String("server", "8.8.8.8", "")
-		flIPFile      = flag.String("input", "", "")
-		flReverse     = flag.Bool("reverse", false, "")
-		flHeader      = flag.Bool("headers", false, "")
-		flTLS         = flag.Bool("tls", false, "")
-		flViewDNSInfo = flag.Bool("viewdns", false, "")
-		flLogonTube   = flag.Bool("logontube", false, "")
-		flSRV         = flag.Bool("srv", false, "")
-		flBing        = flag.String("bing", "", "")
-		flYandex      = flag.String("yandex", "", "")
-		flDomain      = flag.String("domain", "", "")
-		flDictFile    = flag.String("dictionary", "", "")
-		flFcrdns      = flag.Bool("fcrdns", false, "")
-		flClean       = flag.Bool("clean", false, "")
-		flCsv         = flag.Bool("csv", false, "")
-		flJSON        = flag.Bool("json", false, "")
+		flVersion        = flag.Bool("version", false, "")
+		flTimeout        = flag.Int64("timeout", 600, "")
+		flConcurrency    = flag.Int("concurrency", 100, "")
+		flDebug          = flag.Bool("debug", false, "")
+		flipv6           = flag.Bool("ipv6", false, "")
+		flServerAddr     = flag.String("server", "8.8.8.8", "")
+		flIPFile         = flag.String("input", "", "")
+		flReverse        = flag.Bool("reverse", false, "")
+		flHeader         = flag.Bool("headers", false, "")
+		flTLS            = flag.Bool("tls", false, "")
+		flViewDNSInfo    = flag.Bool("viewdns-html", false, "")
+		flViewDNSInfoAPI = flag.String("viewdns", "", "")
+		flRobtex         = flag.Bool("robtex", false, "")
+		flLogonTube      = flag.Bool("logontube", false, "")
+		flSRV            = flag.Bool("srv", false, "")
+		flBing           = flag.String("bing", "", "")
+		flBingHTML       = flag.Bool("bing-html", false, "")
+		flYandex         = flag.String("yandex", "", "")
+		flDomain         = flag.String("domain", "", "")
+		flDictFile       = flag.String("dictionary", "", "")
+		flFcrdns         = flag.Bool("fcrdns", false, "")
+		flClean          = flag.Bool("clean", false, "")
+		flCsv            = flag.Bool("csv", false, "")
+		flJSON           = flag.Bool("json", false, "")
 	)
 	flag.Usage = func() { fmt.Print(usage) }
 	flag.Parse()
@@ -303,8 +324,17 @@ func main() {
 		if *flViewDNSInfo {
 			tasks <- func() (string, bsw.Results, error) { return bsw.ViewDNSInfo(host) }
 		}
+		if *flViewDNSInfoAPI != "" {
+			tasks <- func() (string, bsw.Results, error) { return bsw.ViewDNSInfoAPI(host, *flViewDNSInfoAPI) }
+		}
+		if *flRobtex {
+			tasks <- func() (string, bsw.Results, error) { return bsw.Robtex(host) }
+		}
 		if *flLogonTube {
 			tasks <- func() (string, bsw.Results, error) { return bsw.LogonTubeAPI(host) }
+		}
+		if *flBingHTML {
+			tasks <- func() (string, bsw.Results, error) { return bsw.Bing(host) }
 		}
 		if *flBing != "" && bingPath != "" {
 			tasks <- func() (string, bsw.Results, error) { return bsw.BingAPI(host, *flBing, bingPath) }
