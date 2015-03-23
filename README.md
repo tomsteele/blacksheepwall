@@ -55,7 +55,7 @@ $ sudo cp blacksheepwall /usr/local/bin
   -viewdns-html         Lookup each host using viewdns.info's Reverse IP
                         Lookup function. Use sparingly as they will block you.
 
-  -viewdns <string>     Lookup each host using viewdns.info's API  and Reverse IP Lookup function.
+  -viewdns <string>     Lookup each host using viewdns.info's API and Reverse IP Lookup function.
 
   -robtex               Lookup each host using robtex.com
 
