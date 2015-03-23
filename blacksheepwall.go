@@ -46,7 +46,7 @@ const usage = `
   -tls                  Attempt to retrieve names from TLS certificates
                         (CommonName and Subject Alternative Name).
   -viewdns              Lookup each host using viewdns.info's Reverse IP
-                        Lookup function.
+                        Lookup function. Use sparingly as they will block you.
   -srv                  Find DNS SRV record and retrieve associated hostname/IP info.
   -fcrdns               Verify results by attempting to retrieve the A or AAAA record for
                         each result previously identified hostname.
