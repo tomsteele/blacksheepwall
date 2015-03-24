@@ -46,9 +46,9 @@ const usage = `
   -bing-html            Use Bing search 'ip:' operator to lookup hostname for each host, only
                         the first page is scraped. This does not use the API.
 
-  -shodan <string>      Provided a Shodan API key. Use Shodan's API '/dns/reverse' REST
-                        endpoint to lookup hostnames for each host. A single call is made
-                        for all ips.
+  -shodan <string>      Provided a Shodan API key. Use Shodan's API '/dns/reverse' to lookup hostnames for
+                        each ip, and '/shodan/host/search' to lookup ips/hostnames for a domain.
+                        A single call is made for all ips.
 
   -headers              Perform HTTP(s) requests to each host and look for
                         hostnames in a possible Location header.
@@ -186,7 +186,7 @@ func main() {
 	if *flDomain == "" && *flSRV == true {
 		log.Fatal("SRV lookup requires domain set with -domain")
 	}
-	if *flDomain != "" && *flYandex == "" && *flDictFile == "" && !*flSRV && !*flLogonTube {
+	if *flDomain != "" && *flYandex == "" && *flDictFile == "" && !*flSRV && !*flLogonTube && *flShodan == "" {
 		log.Fatal("-domain provided but no methods provided that use it")
 	}
 
@@ -318,7 +318,7 @@ func main() {
 	}
 
 	if *flShodan != "" && len(ipAddrList) > 0 {
-		tasks <- func() (string, bsw.Results, error) { return bsw.ShodanAPI(ipAddrList, *flShodan) }
+		tasks <- func() (string, bsw.Results, error) { return bsw.ShodanAPIReverse(ipAddrList, *flShodan) }
 	}
 
 	// IP based functionality should be added to the pool here.
@@ -386,6 +386,9 @@ func main() {
 		}
 		if *flLogonTube {
 			tasks <- func() (string, bsw.Results, error) { return bsw.LogonTubeAPI(domain) }
+		}
+		if *flShodan != "" {
+			tasks <- func() (string, bsw.Results, error) { return bsw.ShodanAPIHostSearch(domain, *flShodan) }
 		}
 	}
 
