@@ -317,7 +317,7 @@ func main() {
 		bingPath = p
 	}
 
-	if *flShodan != "" {
+	if *flShodan != "" && len(ipAddrList) > 0 {
 		tasks <- func() (string, bsw.Results, error) { return bsw.ShodanAPI(ipAddrList, *flShodan) }
 	}
 
