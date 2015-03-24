@@ -59,9 +59,9 @@ func FindBingSearchPath(key string) (string, error) {
 	return "", errors.New("invalid Bing API key")
 }
 
-// BingAPI uses the bing search API and 'ip' search operator to find alternate hostnames for
+// BingAPIIP uses the bing search API and 'ip' search operator to find alternate hostnames for
 // a single IP.
-func BingAPI(ip, key, path string) (string, Results, error) {
+func BingAPIIP(ip, key, path string) (string, Results, error) {
 	task := "bing API"
 	results := Results{}
 	client := &http.Client{}
@@ -92,7 +92,48 @@ func BingAPI(ip, key, path string) (string, Results, error) {
 	return task, results, nil
 }
 
-func Bing(ip string) (string, Results, error) {
+// BingAPIDomain uses the bing search API and 'domain' search operator to find hostnames for
+// a single domain.
+func BingAPIDomain(domain, key, path, server string) (string, Results, error) {
+	task := "bing API"
+	results := Results{}
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", azureURL+path+"?Query=%27domain:"+domain+"%27&$top=50&Adult=%27off%27&$format=json", nil)
+	if err != nil {
+		return task, results, err
+	}
+	req.SetBasicAuth(key, key)
+	resp, err := client.Do(req)
+	if err != nil {
+		return task, results, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return task, results, err
+	}
+	m := &bingMessage{}
+	if err = json.Unmarshal(body, &m); err != nil {
+		return task, results, err
+	}
+	for _, res := range m.D.Results {
+		u, err := url.Parse(res.URL)
+		if err == nil && u.Host != "" {
+			ip, err := LookupName(u.Host, server)
+			if err != nil || ip == "" {
+				ip, err = LookupCname(u.Host, server)
+				if err != nil || ip == "" {
+					continue
+				}
+			}
+			results = append(results, Result{Source: task, IP: ip, Hostname: u.Host})
+		}
+	}
+	return task, results, nil
+}
+
+// BingIP uses bing's 'ip:' search operator and scrapes the HTML to find hostnames for an ip.
+func BingIP(ip string) (string, Results, error) {
 	task := "bing"
 	results := Results{}
 	resp, err := http.Get("http://www.bing.com/search?q=ip:" + ip)
@@ -111,6 +152,34 @@ func Bing(ip string) (string, Results, error) {
 				IP:       ip,
 				Hostname: u.Host,
 			})
+		}
+	})
+	return task, results, err
+}
+
+// BingDomain uses bing's 'domain:' search operator and scrapes the HTML to find ips and hostnames for a domain.
+func BingDomain(domain, server string) (string, Results, error) {
+	task := "bing"
+	results := Results{}
+	resp, err := http.Get("http://www.bing.com/search?q=domain:" + domain)
+	if err != nil {
+		return task, results, err
+	}
+	doc, err := goquery.NewDocumentFromResponse(resp)
+	if err != nil {
+		return task, results, err
+	}
+	doc.Selection.Find("cite").Each(func(_ int, s *goquery.Selection) {
+		u, err := url.Parse(s.Text())
+		if err == nil && u.Host != "" {
+			ip, err := LookupName(u.Host, server)
+			if err != nil || ip == "" {
+				ip, err = LookupCname(u.Host, server)
+				if err != nil || ip == "" {
+					return
+				}
+			}
+			results = append(results, Result{Source: task, IP: ip, Hostname: u.Host})
 		}
 	})
 	return task, results, err
