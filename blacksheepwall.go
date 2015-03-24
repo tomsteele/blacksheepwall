@@ -41,9 +41,11 @@ const usage = `
                         provided domain.
 
   -bing <string>        Provided a base64 encoded API key. Use the Bing search
-                        API's 'ip:' operator to lookup hostnames for each host.
+                        API's 'ip:' operator to lookup hostnames for each ip, and the
+                        'domain:' operator to find ips/hostnames for a domain.
 
-  -bing-html            Use Bing search 'ip:' operator to lookup hostname for each host, only
+  -bing-html            Use Bing search 'ip:' operator to lookup hostname for each ip, and the
+                        'domain:' operator to find ips/hostnames for a domain. Only
                         the first page is scraped. This does not use the API.
 
   -shodan <string>      Provided a Shodan API key. Use Shodan's API '/dns/reverse' to lookup hostnames for
@@ -186,7 +188,7 @@ func main() {
 	if *flDomain == "" && *flSRV == true {
 		log.Fatal("SRV lookup requires domain set with -domain")
 	}
-	if *flDomain != "" && *flYandex == "" && *flDictFile == "" && !*flSRV && !*flLogonTube && *flShodan == "" {
+	if *flDomain != "" && *flYandex == "" && *flDictFile == "" && !*flSRV && !*flLogonTube && *flShodan == "" && *flBing == "" && !*flBingHTML {
 		log.Fatal("-domain provided but no methods provided that use it")
 	}
 
@@ -343,10 +345,10 @@ func main() {
 			tasks <- func() (string, bsw.Results, error) { return bsw.LogonTubeAPI(host) }
 		}
 		if *flBingHTML {
-			tasks <- func() (string, bsw.Results, error) { return bsw.Bing(host) }
+			tasks <- func() (string, bsw.Results, error) { return bsw.BingIP(host) }
 		}
 		if *flBing != "" && bingPath != "" {
-			tasks <- func() (string, bsw.Results, error) { return bsw.BingAPI(host, *flBing, bingPath) }
+			tasks <- func() (string, bsw.Results, error) { return bsw.BingAPIIP(host, *flBing, bingPath) }
 		}
 		if *flHeader {
 			tasks <- func() (string, bsw.Results, error) { return bsw.Headers(host, *flTimeout) }
@@ -389,6 +391,14 @@ func main() {
 		}
 		if *flShodan != "" {
 			tasks <- func() (string, bsw.Results, error) { return bsw.ShodanAPIHostSearch(domain, *flShodan) }
+		}
+		if *flBing != "" && bingPath != "" {
+			tasks <- func() (string, bsw.Results, error) {
+				return bsw.BingAPIDomain(domain, *flBing, bingPath, *flServerAddr)
+			}
+		}
+		if *flBingHTML {
+			tasks <- func() (string, bsw.Results, error) { return bsw.BingDomain(domain, *flServerAddr) }
 		}
 	}
 
