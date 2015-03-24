@@ -46,6 +46,10 @@ const usage = `
   -bing-html            Use Bing search 'ip:' operator to lookup hostname for each host, only
                         the first page is scraped. This does not use the API.
 
+  -shodan <string>      Provided a Shodan API key. Use Shodan's API '/dns/reverse' REST
+                        endpoint to lookup hostnames for each host. A single call is made
+                        for all ips.
+
   -headers              Perform HTTP(s) requests to each host and look for
                         hostnames in a possible Location header.
 
@@ -141,6 +145,7 @@ func main() {
 		flLogonTube      = flag.Bool("logontube", false, "")
 		flSRV            = flag.Bool("srv", false, "")
 		flBing           = flag.String("bing", "", "")
+		flShodan         = flag.String("shodan", "", "")
 		flBingHTML       = flag.Bool("bing-html", false, "")
 		flYandex         = flag.String("yandex", "", "")
 		flDomain         = flag.String("domain", "", "")
@@ -310,6 +315,10 @@ func main() {
 			log.Fatal(err.Error())
 		}
 		bingPath = p
+	}
+
+	if *flShodan != "" {
+		tasks <- func() (string, bsw.Results, error) { return bsw.ShodanAPI(ipAddrList, *flShodan) }
 	}
 
 	// IP based functionality should be added to the pool here.
