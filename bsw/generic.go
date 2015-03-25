@@ -7,6 +7,26 @@ import (
 	"github.com/miekg/dns"
 )
 
+// LookupNS returns the names servers for a domain.
+func LookupNS(domain, serverAddr string) ([]string, error) {
+	servers := []string{}
+	m := &dns.Msg{}
+	m.SetQuestion(dns.Fqdn(domain), dns.TypeNS)
+	in, err := dns.Exchange(m, serverAddr+":53")
+	if err != nil {
+		return servers, err
+	}
+	if len(in.Answer) < 1 {
+		return servers, errors.New("no Answer")
+	}
+	for _, a := range in.Answer {
+		if ns, ok := a.(*dns.NS); ok {
+			servers = append(servers, ns.Ns)
+		}
+	}
+	return servers, nil
+}
+
 // LookupIP returns hostname from PTR record or error.
 func LookupIP(ip, serverAddr string) ([]string, error) {
 	names := []string{}
@@ -55,7 +75,7 @@ func LookupName(fqdn, serverAddr string) (string, error) {
 	return "", errors.New("no A record returned")
 }
 
-// LookupCname returns an IPv4 address from CNAME record or error.
+// LookupCname returns a fqdn address from CNAME record or error.
 func LookupCname(fqdn, serverAddr string) (string, error) {
 	m := &dns.Msg{}
 	m.SetQuestion(dns.Fqdn(fqdn), dns.TypeCNAME)
