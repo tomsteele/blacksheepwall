@@ -28,7 +28,7 @@ type bingResult struct {
 }
 
 type bingMetadata struct {
-	Uri  string `json:"Uri"`
+	URI  string `json:"Uri"`
 	Type string `json:"Type"`
 }
 
@@ -84,8 +84,7 @@ func BingAPIIP(ip, key, path string) (string, Results, error) {
 		return task, results, err
 	}
 	for _, res := range m.D.Results {
-		u, err := url.Parse(res.URL)
-		if err == nil {
+		if u, err := url.Parse(res.URL); err == nil && u.Host != "" {
 			results = append(results, Result{Source: task, IP: ip, Hostname: u.Host})
 		}
 	}
@@ -118,20 +117,21 @@ func BingAPIDomain(domain, key, path, server string) (string, Results, error) {
 	}
 	for _, res := range m.D.Results {
 		u, err := url.Parse(res.URL)
-		if err == nil && u.Host != "" {
-			ip, err := LookupName(u.Host, server)
-			if err != nil || ip == "" {
-				cfqdn, err := LookupCname(u.Host, server)
-				if err != nil || cfqdn == "" {
-					continue
-				}
-				ip, err = LookupName(cfqdn, server)
-				if err != nil || ip == "" {
-					continue
-				}
-			}
-			results = append(results, Result{Source: task, IP: ip, Hostname: u.Host})
+		if err != nil || u.Host == "" {
+			continue
 		}
+		ip, err := LookupName(u.Host, server)
+		if err != nil || ip == "" {
+			cfqdn, err := LookupCname(u.Host, server)
+			if err != nil || cfqdn == "" {
+				continue
+			}
+			ip, err = LookupName(cfqdn, server)
+			if err != nil || ip == "" {
+				continue
+			}
+		}
+		results = append(results, Result{Source: task, IP: ip, Hostname: u.Host})
 	}
 	return task, results, nil
 }
@@ -150,13 +150,14 @@ func BingIP(ip string) (string, Results, error) {
 	}
 	doc.Selection.Find("cite").Each(func(_ int, s *goquery.Selection) {
 		u, err := url.Parse(s.Text())
-		if err == nil && u.Host != "" {
-			results = append(results, Result{
-				Source:   task,
-				IP:       ip,
-				Hostname: u.Host,
-			})
+		if err != nil || u.Host == "" {
+			return
 		}
+		results = append(results, Result{
+			Source:   task,
+			IP:       ip,
+			Hostname: u.Host,
+		})
 	})
 	return task, results, err
 }
@@ -175,21 +176,22 @@ func BingDomain(domain, server string) (string, Results, error) {
 	}
 	doc.Selection.Find("cite").Each(func(_ int, s *goquery.Selection) {
 		u, err := url.Parse(s.Text())
-		if err == nil && u.Host != "" {
-			ip, err := LookupName(u.Host, server)
-			if err != nil || ip == "" {
-				cfqdn, err := LookupCname(u.Host, server)
-				if err != nil || cfqdn == "" {
-					return
-				}
-				ip, err = LookupName(cfqdn, server)
-				if err != nil || ip == "" {
-					return
-				}
-
-			}
-			results = append(results, Result{Source: task, IP: ip, Hostname: u.Host})
+		if err != nil || u.Host == "" {
+			return
 		}
+		ip, err := LookupName(u.Host, server)
+		if err != nil || ip == "" {
+			cfqdn, err := LookupCname(u.Host, server)
+			if err != nil || cfqdn == "" {
+				return
+			}
+			ip, err = LookupName(cfqdn, server)
+			if err != nil || ip == "" {
+				return
+			}
+
+		}
+		results = append(results, Result{Source: task, IP: ip, Hostname: u.Host})
 	})
 	return task, results, err
 }
