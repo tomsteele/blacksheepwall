@@ -17,6 +17,7 @@ $ sudo cp blacksheepwall /usr/local/bin
 ##Usage##
 
 ```
+
  Usage: blacksheepwall [options] <ip address or CIDR>
 
  Options:
@@ -44,6 +45,8 @@ $ sudo cp blacksheepwall /usr/local/bin
                         each result previously identified hostname.
 
   -parse <string>       Generate output by parsing JSON from a file from a previous scan.
+
+  -validate             Validate hostnames using a RFC compliant regex.
 
  Passive:
   -dictionary <string>  Attempt to retrieve the CNAME and A record for
@@ -98,6 +101,5 @@ $ sudo cp blacksheepwall /usr/local/bin
   -clean                Print results as unique hostnames for each host.
   -csv                  Print results in csv format.
   -json                 Print results as JSON.
-
 
 ```
