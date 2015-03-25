@@ -121,7 +121,11 @@ func BingAPIDomain(domain, key, path, server string) (string, Results, error) {
 		if err == nil && u.Host != "" {
 			ip, err := LookupName(u.Host, server)
 			if err != nil || ip == "" {
-				ip, err = LookupCname(u.Host, server)
+				cfqdn, err := LookupCname(u.Host, server)
+				if err != nil || cfqdn == "" {
+					continue
+				}
+				ip, err = LookupName(cfqdn, server)
 				if err != nil || ip == "" {
 					continue
 				}
@@ -174,10 +178,15 @@ func BingDomain(domain, server string) (string, Results, error) {
 		if err == nil && u.Host != "" {
 			ip, err := LookupName(u.Host, server)
 			if err != nil || ip == "" {
-				ip, err = LookupCname(u.Host, server)
+				cfqdn, err := LookupCname(u.Host, server)
+				if err != nil || cfqdn == "" {
+					return
+				}
+				ip, err = LookupName(cfqdn, server)
 				if err != nil || ip == "" {
 					return
 				}
+
 			}
 			results = append(results, Result{Source: task, IP: ip, Hostname: u.Host})
 		}

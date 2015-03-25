@@ -34,7 +34,11 @@ func YandexAPI(domain, apiURL, serverAddr string) (string, Results, error) {
 		}
 		ip, err := LookupName(domain, serverAddr)
 		if err != nil || ip == "" {
-			ip, err = LookupCname(domain, serverAddr)
+			cfqdn, err := LookupCname(domain, serverAddr)
+			if err != nil || cfqdn == "" {
+				return
+			}
+			ip, err = LookupName(cfqdn, serverAddr)
 			if err != nil || ip == "" {
 				return
 			}
