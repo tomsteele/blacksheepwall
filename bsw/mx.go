@@ -1,8 +1,10 @@
 package bsw
 
-import "strings"
+import (
+	"strings"
+)
 
-// MX returns the A record for an MX record for a domain.
+// MX returns the A record for any MX records for a domain.
 func MX(domain, serverAddr string) (string, Results, error) {
 	task := "mx"
 	results := Results{}
