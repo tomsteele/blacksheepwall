@@ -13,6 +13,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"regexp"
 	"sort"
 	"text/tabwriter"
 
@@ -47,6 +48,8 @@ const usage = `
                         each result previously identified hostname.
 
   -parse <string>       Generate output by parsing JSON from a file from a previous scan.
+
+  -validate             Validate hostnames using a RFC compliant regex.
 
  Passive:
   -dictionary <string>  Attempt to retrieve the CNAME and A record for
@@ -188,6 +191,8 @@ func output(results bsw.Results, ojson, ocsv, oclean bool) {
 	}
 }
 
+const domainReg = `^\.?[a-z\d]+(?:(?:[a-z\d]*)|(?:[a-z\d\-]*[a-z\d]))(?:\.[a-z\d]+(?:(?:[a-z\d]*)|(?:[a-z\d\-]*[a-z\d])))*$`
+
 type task func() (string, bsw.Results, error)
 type empty struct{}
 
@@ -199,6 +204,7 @@ func main() {
 		flTimeout        = flag.Int64("timeout", 600, "")
 		flConcurrency    = flag.Int("concurrency", 100, "")
 		flDebug          = flag.Bool("debug", false, "")
+		flValidate       = flag.Bool("validate", false, "")
 		flipv6           = flag.Bool("ipv6", false, "")
 		flServerAddr     = flag.String("server", "8.8.8.8", "")
 		flIPFile         = flag.String("input", "", "")
@@ -375,6 +381,11 @@ func main() {
 				}
 			} else {
 				for _, r := range result {
+					if *flValidate {
+						if ok, err := regexp.Match(domainReg, []byte(r.Hostname)); err != nil || !ok {
+							continue
+						}
+					}
 					resMap[r] = true
 				}
 			}
