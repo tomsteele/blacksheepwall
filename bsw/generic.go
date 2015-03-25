@@ -7,6 +7,30 @@ import (
 	"github.com/miekg/dns"
 )
 
+// LookupMX returns all the mx servers for a domain.
+func LookupMX(domain, serverAddr string) ([]string, error) {
+	servers := []string{}
+	m := &dns.Msg{}
+	m.SetQuestion(dns.Fqdn(domain), dns.TypeMX)
+	in, err := dns.Exchange(m, serverAddr+":53")
+	if err != nil {
+		return servers, err
+	}
+	if len(in.Answer) < 1 {
+		return servers, errors.New("no Answer")
+	}
+	for _, a := range in.Answer {
+		if mx, ok := a.(*dns.MX); ok {
+			parts := strings.Split(mx.Mx, " ")
+			if len(parts) < 1 {
+				continue
+			}
+			servers = append(servers, parts[len(parts)-1])
+		}
+	}
+	return servers, nil
+}
+
 // LookupNS returns the names servers for a domain.
 func LookupNS(domain, serverAddr string) ([]string, error) {
 	servers := []string{}
