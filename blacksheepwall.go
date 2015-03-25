@@ -36,6 +36,8 @@ const usage = `
   -dictionary <string>  Attempt to retrieve the CNAME and A record for
                         each subdomain in the line separated file.
 
+  -axfr                 Attempt a zone transfer on the domain.
+
   -yandex <string>      Provided a Yandex search XML API url. Use the Yandex
                         search 'rhost:' operator to find subdomains of a
                         provided domain.
@@ -141,6 +143,7 @@ func main() {
 		flReverse        = flag.Bool("reverse", false, "")
 		flHeader         = flag.Bool("headers", false, "")
 		flTLS            = flag.Bool("tls", false, "")
+		flAXFR           = flag.Bool("axfr", false, "")
 		flViewDNSInfo    = flag.Bool("viewdns-html", false, "")
 		flViewDNSInfoAPI = flag.String("viewdns", "", "")
 		flRobtex         = flag.Bool("robtex", false, "")
@@ -188,7 +191,7 @@ func main() {
 	if *flDomain == "" && *flSRV == true {
 		log.Fatal("SRV lookup requires domain set with -domain")
 	}
-	if *flDomain != "" && *flYandex == "" && *flDictFile == "" && !*flSRV && !*flLogonTube && *flShodan == "" && *flBing == "" && !*flBingHTML {
+	if *flDomain != "" && *flYandex == "" && *flDictFile == "" && !*flSRV && !*flLogonTube && *flShodan == "" && *flBing == "" && !*flBingHTML && !*flAXFR {
 		log.Fatal("-domain provided but no methods provided that use it")
 	}
 
@@ -399,6 +402,9 @@ func main() {
 		}
 		if *flBingHTML {
 			tasks <- func() (string, bsw.Results, error) { return bsw.BingDomain(domain, *flServerAddr) }
+		}
+		if *flAXFR {
+			tasks <- func() (string, bsw.Results, error) { return bsw.AXFR(domain, *flServerAddr) }
 		}
 	}
 
