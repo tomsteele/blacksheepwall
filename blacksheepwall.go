@@ -9,6 +9,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -19,24 +20,41 @@ import (
 )
 
 const usage = `
-  Usage: blacksheepwall [options] <ip address or CIDR>
+ Usage: blacksheepwall [options] <ip address or CIDR>
 
-  Options:
+ Options:
   -h, --help            Show Usage and exit.
+
   -version              Show version and exit.
+
   -debug                Enable debugging and show errors returned from tasks.
+
   -timeout              Maximum timeout in seconds for SOCKET connections.  [default .5 seconds]
+
   -concurrency <int>    Max amount of concurrent tasks.    [default: 100]
+
   -server <string>      DNS server address.    [default: "8.8.8.8"]
+
   -input <string>       Line separated file of networks (CIDR) or
                         IP Addresses.
+
   -ipv6                 Look for additional AAAA records where applicable.
+
   -domain <string>      Target domain to use for certain tasks, can be a
                         single domain or a file of line separated domains.
+
+  -fcrdns               Verify results by attempting to retrieve the A or AAAA record for
+                        each result previously identified hostname.
+
+  -parse <string>       Generate output by parsing JSON from a file from a previous scan.
+
+ Passive:
   -dictionary <string>  Attempt to retrieve the CNAME and A record for
                         each subdomain in the line separated file.
 
-  -axfr                 Attempt a zone transfer on the domain.
+  -ns                   Lookup the ip and hostname of any nameservers for the domain.
+
+  -mx                   Lookup the ip and hostmame of any mx records for the domain.
 
   -yandex <string>      Provided a Yandex search XML API url. Use the Yandex
                         search 'rhost:' operator to find subdomains of a
@@ -54,13 +72,9 @@ const usage = `
                         each ip, and '/shodan/host/search' to lookup ips/hostnames for a domain.
                         A single call is made for all ips.
 
-  -headers              Perform HTTP(s) requests to each host and look for
-                        hostnames in a possible Location header.
 
   -reverse              Retrieve the PTR for each host.
 
-  -tls                  Attempt to retrieve names from TLS certificates
-                        (CommonName and Subject Alternative Name).
 
   -viewdns-html         Lookup each host using viewdns.info's Reverse IP
                         Lookup function. Use sparingly as they will block you.
@@ -71,10 +85,17 @@ const usage = `
 
   -logontube            Lookup each host and/or domain using logontube.com's API.
 
+
+ Active:
   -srv                  Find DNS SRV record and retrieve associated hostname/IP info.
 
-  -fcrdns               Verify results by attempting to retrieve the A or AAAA record for
-                        each result previously identified hostname.
+  -axfr                 Attempt a zone transfer on the domain.
+
+  -headers              Perform HTTP(s) requests to each host and look for
+                        hostnames in a possible Location header.
+
+  -tls                  Attempt to retrieve names from TLS certificates
+                        (CommonName and Subject Alternative Name).
 
  Output Options:
   -clean                Print results as unique hostnames for each host.
@@ -111,7 +132,6 @@ func increaseIP(ip net.IP) {
 	}
 }
 
-// Reads lines from a file and return as a slice.
 func readFileLines(path string) ([]string, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -124,6 +144,48 @@ func readFileLines(path string) ([]string, error) {
 		lines = append(lines, scanner.Text())
 	}
 	return lines, scanner.Err()
+}
+
+func readDataAndOutput(path string, ojson, ocsv, oclean bool) {
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		log.Fatal("Error reading file provided to -parse")
+	}
+	r := bsw.Results{}
+	if err := json.Unmarshal(data, &r); err != nil {
+		log.Fatal("Error parsing JSON from file provided to -parse")
+	}
+	output(r, ojson, ocsv, oclean)
+}
+
+func output(results bsw.Results, ojson, ocsv, oclean bool) {
+	switch {
+	case ojson:
+		j, _ := json.MarshalIndent(results, "", "    ")
+		fmt.Println(string(j))
+	case ocsv:
+		for _, r := range results {
+			fmt.Printf("%s,%s,%s\n", r.Hostname, r.IP, r.Source)
+		}
+	case oclean:
+		cleanSet := make(map[string][]string)
+		for _, r := range results {
+			cleanSet[r.IP] = append(cleanSet[r.IP], r.Hostname)
+		}
+		for k, v := range cleanSet {
+			fmt.Printf("%s:\n", k)
+			for _, h := range v {
+				fmt.Printf("\t%s\n", h)
+			}
+		}
+	default:
+		w := tabwriter.NewWriter(os.Stdout, 0, 8, 4, ' ', 0)
+		fmt.Fprintln(w, "IP\tHostname\tSource")
+		for _, r := range results {
+			fmt.Fprintf(w, "%s\t%s\t%s\n", r.IP, r.Hostname, r.Source)
+		}
+		w.Flush()
+	}
 }
 
 type task func() (string, bsw.Results, error)
@@ -140,10 +202,13 @@ func main() {
 		flipv6           = flag.Bool("ipv6", false, "")
 		flServerAddr     = flag.String("server", "8.8.8.8", "")
 		flIPFile         = flag.String("input", "", "")
+		flParse          = flag.String("parse", "", "")
 		flReverse        = flag.Bool("reverse", false, "")
 		flHeader         = flag.Bool("headers", false, "")
 		flTLS            = flag.Bool("tls", false, "")
 		flAXFR           = flag.Bool("axfr", false, "")
+		flMX             = flag.Bool("mx", false, "")
+		flNS             = flag.Bool("ns", false, "")
 		flViewDNSInfo    = flag.Bool("viewdns-html", false, "")
 		flViewDNSInfoAPI = flag.String("viewdns", "", "")
 		flRobtex         = flag.Bool("robtex", false, "")
@@ -165,6 +230,11 @@ func main() {
 
 	if *flVersion {
 		fmt.Println("blacksheepwall version ", bsw.VERSION)
+		os.Exit(0)
+	}
+
+	if *flParse != "" {
+		readDataAndOutput(*flParse, *flJSON, *flCsv, *flClean)
 		os.Exit(0)
 	}
 
@@ -191,7 +261,7 @@ func main() {
 	if *flDomain == "" && *flSRV == true {
 		log.Fatal("SRV lookup requires domain set with -domain")
 	}
-	if *flDomain != "" && *flYandex == "" && *flDictFile == "" && !*flSRV && !*flLogonTube && *flShodan == "" && *flBing == "" && !*flBingHTML && !*flAXFR {
+	if *flDomain != "" && *flYandex == "" && *flDictFile == "" && !*flSRV && !*flLogonTube && *flShodan == "" && *flBing == "" && !*flBingHTML && !*flAXFR && !*flNS && !*flMX {
 		log.Fatal("-domain provided but no methods provided that use it")
 	}
 
@@ -406,6 +476,12 @@ func main() {
 		if *flAXFR {
 			tasks <- func() (string, bsw.Results, error) { return bsw.AXFR(domain, *flServerAddr) }
 		}
+		if *flNS {
+			tasks <- func() (string, bsw.Results, error) { return bsw.NS(domain, *flServerAddr) }
+		}
+		if *flMX {
+			tasks <- func() (string, bsw.Results, error) { return bsw.MX(domain, *flServerAddr) }
+		}
 	}
 
 	// Close the tasks channel after all jobs have completed and for each
@@ -426,32 +502,5 @@ func main() {
 		results = append(results, k)
 	}
 	sort.Sort(results)
-
-	switch {
-	case *flJSON:
-		j, _ := json.MarshalIndent(results, "", "    ")
-		fmt.Println(string(j))
-	case *flCsv:
-		for _, r := range results {
-			fmt.Printf("%s,%s,%s\n", r.Hostname, r.IP, r.Source)
-		}
-	case *flClean:
-		cleanSet := make(map[string][]string)
-		for _, r := range results {
-			cleanSet[r.IP] = append(cleanSet[r.IP], r.Hostname)
-		}
-		for k, v := range cleanSet {
-			fmt.Printf("%s:\n", k)
-			for _, h := range v {
-				fmt.Printf("\t%s\n", h)
-			}
-		}
-	default:
-		w := tabwriter.NewWriter(os.Stdout, 0, 8, 4, ' ', 0)
-		fmt.Fprintln(w, "IP\tHostname\tSource")
-		for _, r := range results {
-			fmt.Fprintf(w, "%s\t%s\t%s\n", r.IP, r.Hostname, r.Source)
-		}
-		w.Flush()
-	}
+	output(results, *flJSON, *flCsv, *flClean)
 }
