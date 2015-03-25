@@ -13,14 +13,14 @@ func TestInvalidKeyToPath(t *testing.T) {
 }
 
 func TestInvalidBingKey(t *testing.T) {
-	_, _, err := BingAPI("4.2.2.2", "notavalidkey", "/Data.ashx/Bing/Search/v1/Web")
+	_, _, err := BingAPIIP("4.2.2.2", "notavalidkey", "/Data.ashx/Bing/Search/v1/Web")
 	if err == nil {
 		t.Error("BingAPI did not return error for bad key and path")
 	}
 }
 
-func TestBing(t *testing.T) {
-	tsk, results, err := Bing("198.41.208.143")
+func TestBingIP(t *testing.T) {
+	tsk, results, err := BingIP("198.41.208.143")
 	if err != nil {
 		t.Error("bing returned an error")
 		t.Log(err)
