@@ -1,7 +1,9 @@
 blacksheepwall
 ===
 
-blacksheepwall is a hostname reconnaissance tool written in Go.
+[![](https://godoc.org/github.com/tomsteele/blacksheepwall/bsw?status.svg)](http://godoc.org/github.com/tomsteele/blacksheepwall/bsw)
+
+blacksheepwall is a hostname reconnaissance tool written in Go. It can also be used as a stand-alone package in your tools.
 
 ##Download##
 Binary packages for every supported operating system are availble [here](https://github.com/tomsteele/blacksheepwall/releases/latest).
