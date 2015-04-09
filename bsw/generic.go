@@ -70,6 +70,9 @@ func LookupIP(ip, serverAddr string) ([]string, error) {
 
 	for _, a := range in.Answer {
 		if ptr, ok := a.(*dns.PTR); ok {
+			if strings.Contains(ptr.Ptr, strings.Join(strings.Split(ip, "."), "-")) {
+				continue
+			}
 			names = append(names, strings.TrimRight(ptr.Ptr, "."))
 		}
 	}
