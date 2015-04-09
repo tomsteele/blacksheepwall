@@ -1,0 +1,19 @@
+#!/bin/sh
+
+for OS in "linux" "darwin" "windows" "freebsd"; do
+	GOOS=$OS  CGO_ENABLED=0 GOARCH=amd64 go build
+	FOLDER=blacksheepwall2.4.0$OS-$ARCH
+	ARCHIVE=$FOLDER.tar.gz
+	mkdir $FOLDER
+	cp LICENSE $FOLDER
+	if [ $OS = "windows" ] ; then
+		cp blacksheepwall.exe $FOLDER
+		rm blacksheepwall.exe
+	else
+		cp blacksheepwall $FOLDER
+		rm blacksheepwall
+	fi
+       	tar -czf $ARCHIVE $FOLDER
+	rm -rf $FOLDER
+	echo $ARCHIVE
+done
