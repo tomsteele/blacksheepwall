@@ -17,9 +17,7 @@ $ sudo cp blacksheepwall /usr/local/bin
 ```
 
 ##Usage##
-
 ```
-
  Usage: blacksheepwall [options] <ip address or CIDR>
 
  Options:
@@ -87,10 +85,11 @@ $ sudo cp blacksheepwall /usr/local/bin
 
   -logontube            Lookup each host and/or domain using logontube.com's API.
 
+  -exfiltrated          Lookup hostnames returned from exfiltrated.com's hostname search.
 
- Active:
   -srv                  Find DNS SRV record and retrieve associated hostname/IP info.
 
+ Active:
   -axfr                 Attempt a zone transfer on the domain.
 
   -headers              Perform HTTP(s) requests to each host and look for

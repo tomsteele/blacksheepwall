@@ -15,6 +15,7 @@ import (
 	"os"
 	"regexp"
 	"sort"
+	"strings"
 	"text/tabwriter"
 
 	"github.com/tomsteele/blacksheepwall/bsw"
@@ -88,10 +89,11 @@ const usage = `
 
   -logontube            Lookup each host and/or domain using logontube.com's API.
 
+  -exfiltrated          Lookup hostnames returned from exfiltrated.com's hostname search.
 
- Active:
   -srv                  Find DNS SRV record and retrieve associated hostname/IP info.
 
+ Active:
   -axfr                 Attempt a zone transfer on the domain.
 
   -headers              Perform HTTP(s) requests to each host and look for
@@ -224,6 +226,7 @@ func main() {
 		flShodan         = flag.String("shodan", "", "")
 		flBingHTML       = flag.Bool("bing-html", false, "")
 		flYandex         = flag.String("yandex", "", "")
+		flExfil          = flag.Bool("exfiltrated", false, "")
 		flDomain         = flag.String("domain", "", "")
 		flDictFile       = flag.String("dictionary", "", "")
 		flFcrdns         = flag.Bool("fcrdns", false, "")
@@ -267,7 +270,19 @@ func main() {
 	if *flDomain == "" && *flSRV == true {
 		log.Fatal("SRV lookup requires domain set with -domain")
 	}
-	if *flDomain != "" && *flYandex == "" && *flDictFile == "" && !*flSRV && !*flLogonTube && *flShodan == "" && *flBing == "" && !*flBingHTML && !*flAXFR && !*flNS && !*flMX {
+	if *flExfil && *flDomain == "" {
+		log.Fatal("Exfiltrated requires domain set with -domain")
+	}
+	if *flNS && *flDomain == "" {
+		log.Fatal("NS lookup requires domain set with -domain")
+	}
+	if *flMX && *flDomain == "" {
+		log.Fatal("MX lookup requires domain set with -domain")
+	}
+	if *flAXFR && *flDomain == "" {
+		log.Fatal("Zone transfer requires domain set with -domain")
+	}
+	if *flDomain != "" && *flYandex == "" && *flDictFile == "" && !*flSRV && !*flLogonTube && *flShodan == "" && *flBing == "" && !*flBingHTML && !*flAXFR && !*flNS && !*flMX && !*flExfil {
 		log.Fatal("-domain provided but no methods provided that use it")
 	}
 
@@ -362,6 +377,7 @@ func main() {
 			}
 			if *flFcrdns {
 				for _, r := range result {
+					r.Hostname = strings.ToLower(r.Hostname)
 					ip, err := bsw.LookupName(r.Hostname, *flServerAddr)
 					if err == nil && len(ip) > 0 {
 						resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname}] = true
@@ -381,6 +397,7 @@ func main() {
 				}
 			} else {
 				for _, r := range result {
+					r.Hostname = strings.ToLower(r.Hostname)
 					if *flValidate {
 						if ok, err := regexp.Match(domainReg, []byte(r.Hostname)); err != nil || !ok {
 							continue
@@ -464,7 +481,10 @@ func main() {
 			}
 		}
 
-		if *flSRV != false {
+		if *flExfil {
+			tasks <- func() (string, bsw.Results, error) { return bsw.ExfiltratedHostname(domain, *flServerAddr) }
+		}
+		if *flSRV {
 			tasks <- func() (string, bsw.Results, error) { return bsw.SRV(domain, *flServerAddr) }
 		}
 		if *flYandex != "" {
