@@ -2,6 +2,7 @@ package bsw
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -13,22 +14,23 @@ const viewDNSSelector = "#null > tbody:nth-child(1) > tr:nth-child(3) > td:nth-c
 
 // ViewDNSInfo uses viewdns.info's reverseip functionality, parsing
 // the HTML table for hostnames.
-func ViewDNSInfo(ip string) (string, Results, error) {
-	task := "viewdns.info"
-	results := Results{}
-	resp, err := http.Get("http://viewdns.info/reverseip/?host=" + ip + "&t=1")
+func ViewDNSInfo(ip string) *Tsk {
+	t := newTsk("viewdns.info")
+	resp, err := http.Get(fmt.Sprintf("http://viewdns.info/reverseip/?host=%s&t=1", ip))
 	if err != nil {
-		return task, results, err
+		t.SetErr(err)
+		return t
 	}
 	defer resp.Body.Close()
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		return task, results, err
+		t.SetErr(err)
+		return t
 	}
 	doc.Selection.Find(viewDNSSelector).Each(func(_ int, s *goquery.Selection) {
-		results = append(results, Result{Source: task, IP: ip, Hostname: s.Text()})
+		t.AddResult(ip, s.Text())
 	})
-	return task, results, nil
+	return t
 }
 
 type viewDNSInfoMessage struct {
@@ -46,29 +48,27 @@ type viewDNSInfoMessage struct {
 }
 
 // ViewDNSInfoAPI uses viewdns.iinfo's API and reverseip function to find hostnames for an ip.
-func ViewDNSInfoAPI(ip, key string) (string, Results, error) {
-	task := "viewdns.info API"
-	results := Results{}
-	resp, err := http.Get("http://pro.viewdns.info/reverseip/?host=" + ip + "&apikey=" + key + "&output=json")
+func ViewDNSInfoAPI(ip, key string) *Tsk {
+	t := newTsk("viewdns.info API")
+	resp, err := http.Get(fmt.Sprintf("http://pro.viewdns.info/reverseip/?host=%s&apikey=%s&output=json", ip, key))
 	if err != nil {
-		return task, results, err
+		t.SetErr(err)
+		return t
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return task, results, err
+		t.SetErr(err)
+		return t
 	}
 	m := &viewDNSInfoMessage{}
 	if err := json.Unmarshal(body, &m); err != nil {
-		return task, results, err
+		t.SetErr(err)
+		return t
 	}
 
 	for _, domain := range m.Response.Domains {
-		results = append(results, Result{
-			Source:   task,
-			IP:       ip,
-			Hostname: domain.Name,
-		})
+		t.AddResult(ip, domain.Name)
 	}
-	return task, results, nil
+	return t
 }

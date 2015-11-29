@@ -7,13 +7,12 @@ import (
 )
 
 // AXFR attempts a zone transfer for the domain.
-func AXFR(domain, serverAddr string) (string, Results, error) {
-	task := "axfr"
-	results := Results{}
-
+func AXFR(domain, serverAddr string) *Tsk {
+	t := newTsk("axfr")
 	servers, err := LookupNS(domain, serverAddr)
 	if err != nil {
-		return task, results, err
+		t.SetErr(err)
+		return t
 	}
 
 	for _, s := range servers {
@@ -22,7 +21,8 @@ func AXFR(domain, serverAddr string) (string, Results, error) {
 		m.SetAxfr(dns.Fqdn(domain))
 		in, err := tr.In(m, s+":53")
 		if err != nil {
-			return task, results, err
+			t.SetErr(err)
+			return t
 		}
 		for ex := range in {
 			for _, a := range ex.RR {
@@ -61,13 +61,9 @@ func AXFR(domain, serverAddr string) (string, Results, error) {
 				default:
 					continue
 				}
-				results = append(results, Result{
-					Source:   task,
-					IP:       ip,
-					Hostname: strings.TrimRight(hostname, "."),
-				})
+				t.AddResult(ip, strings.TrimRight(hostname, "."))
 			}
 		}
 	}
-	return task, results, nil
+	return t
 }

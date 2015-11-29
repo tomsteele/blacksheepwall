@@ -1,6 +1,7 @@
 package bsw
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -9,17 +10,18 @@ import (
 )
 
 // Robtex looks up a host at robtex.com.
-func Robtex(ip string) (string, Results, error) {
-	task := "robtex.com"
-	results := Results{}
-	resp, err := http.Get("http://www.robtex.com/ip/" + ip + ".html")
+func Robtex(ip string) *Tsk {
+	t := newTsk("robtex.com")
+	resp, err := http.Get(fmt.Sprintf("http://www.robtex.com/ip/%s.html", ip))
 	if err != nil {
-		return task, results, err
+		t.SetErr(err)
+		return t
 	}
 	defer resp.Body.Close()
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		return task, results, err
+		t.SetErr(err)
+		return t
 	}
 	doc.Selection.Find("#x_summary td:nth-child(1)").Each(func(_ int, s *goquery.Selection) {
 		hostname := s.Text()
@@ -32,7 +34,7 @@ func Robtex(ip string) (string, Results, error) {
 		if _, err := strconv.Atoi(hostname); err == nil {
 			return
 		}
-		results = append(results, Result{Source: task, IP: ip, Hostname: s.Text()})
+		t.AddResult(ip, s.Text())
 	})
-	return task, results, nil
+	return t
 }
