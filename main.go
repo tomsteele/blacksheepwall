@@ -91,8 +91,9 @@ const usage = `
 
   -exfiltrated          Lookup hostnames returned from exfiltrated.com's hostname search.
 
-  -censys <string>      Searches censys.io for a domain or each host. Used to identify names from TLS
-                        certificates gathered from censys.io.
+  -censys <string>      Searches censys.io for a domain. Names are gathered from TLS certificates for each host
+                        returned from this search. The provided string should be your API ID and Secret separated
+                        by a colon.
 
   -srv                  Find DNS SRV record and retrieve associated hostname/IP info.
 
@@ -498,9 +499,6 @@ func main() {
 		}
 		if *flHeader {
 			tasks <- func() *bsw.Tsk { return bsw.Headers(host, *flTimeout) }
-		}
-		if *flCensys != "" {
-			tasks <- func() *bsw.Tsk { return bsw.CensysIP(host, *flCensys) }
 		}
 	}
 
