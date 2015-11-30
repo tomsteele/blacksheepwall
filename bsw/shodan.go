@@ -9,38 +9,34 @@ import (
 
 // ShodanAPIReverse uses Shodan's '/dns/reverse' REST API to get hostnames for
 // a list of ips.
-func ShodanAPIReverse(ips []string, key string) (string, Results, error) {
-	task := "shodan API reverse"
-	results := Results{}
+func ShodanAPIReverse(ips []string, key string) *Tsk {
+	t := newTsk("shodan API reverse")
 	c := shodan.New(key)
 	d, err := c.DNSReverse(ips)
 	if err != nil {
-		return task, results, err
+		t.SetErr(err)
+		return t
 	}
 	for _, i := range d {
 		for _, h := range i.Hostnames {
-			results = append(results, Result{
-				Source:   task,
-				IP:       i.IP,
-				Hostname: h,
-			})
+			t.AddResult(i.IP, h)
 		}
 	}
-	return task, results, nil
+	return t
 }
 
 // ShodanAPIHostSearch uses Shodan's '/shodan/host/search' REST API endpoint
 // to find hostnames and ip addresses for a domain.
-func ShodanAPIHostSearch(domain string, key string) (string, Results, error) {
-	task := "shodan API host search"
-	results := Results{}
+func ShodanAPIHostSearch(domain string, key string) *Tsk {
+	t := newTsk("shodan API host search")
 	if domain[0] != 46 {
 		domain = "." + domain
 	}
 	c := shodan.New(key)
 	count, err := c.HostCount("hostname:"+domain, []string{})
 	if err != nil {
-		return task, results, err
+		t.SetErr(err)
+		return t
 	}
 	pages := count.Total / 100
 	if pages < 1 {
@@ -51,19 +47,16 @@ func ShodanAPIHostSearch(domain string, key string) (string, Results, error) {
 		opts.Set("page", strconv.Itoa(i))
 		hs, err := c.HostSearch("hostname:"+domain, []string{}, opts)
 		if err != nil {
-			return task, results, err
+			t.SetErr(err)
+			return t
 		}
 		for _, m := range hs.Matches {
 			for _, h := range m.Hostnames {
 				if v, ok := h.(string); ok {
-					results = append(results, Result{
-						Source:   task,
-						IP:       m.IPStr,
-						Hostname: v,
-					})
+					t.AddResult(m.IPStr, v)
 				}
 			}
 		}
 	}
-	return task, results, nil
+	return t
 }

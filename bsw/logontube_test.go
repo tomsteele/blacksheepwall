@@ -3,10 +3,15 @@ package bsw
 import "testing"
 
 func TestLogontubeAPI(t *testing.T) {
-	_, results, _ := LogonTubeAPI("stacktitan.com")
-	if len(results) != 1 {
-		t.Error("Results length not 1")
+	tsk := LogonTubeAPI("stacktitan.com")
+	if err := tsk.Err(); err != nil {
+		t.Log(err)
+		t.Fatal("Error returned from logontube.com")
 	}
+	if !tsk.HasResults() {
+		t.Fatal("No results")
+	}
+	results := tsk.Results()
 	if results[0].Hostname != "stacktitan.com" {
 		t.Error("LogonTubeAPI returned incorrect Hostname")
 	}

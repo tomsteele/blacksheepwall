@@ -1,23 +1,26 @@
 package bsw
 
 import (
+	"fmt"
 	"net/http"
 	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
-// ExfiltratedHostname uses exfiltrated.com's hostname search to identify possible hostnames for a domain. Each returned hostname is then resolved to the current IP.
-func ExfiltratedHostname(domain, server string) (string, Results, error) {
-	task := "exfiltrated.com"
-	results := Results{}
-	resp, err := http.Get("http://exfiltrated.com/queryhostname.php?hostname=" + domain)
+// ExfiltratedHostname uses exfiltrated.com's hostname search to identify
+// possible hostnames for a domain. Each returned hostname is then resolved to the current IP.
+func ExfiltratedHostname(domain, server string) *Tsk {
+	t := newTsk("exfiltrated.com")
+	resp, err := http.Get(fmt.Sprintf("http://exfiltrated.com/queryhostname.php?hostname=%s", domain))
 	if err != nil {
-		return task, results, err
+		t.SetErr(err)
+		return t
 	}
 	doc, err := goquery.NewDocumentFromResponse(resp)
 	if err != nil {
-		return task, results, err
+		t.SetErr(err)
+		return t
 	}
 
 	wg := sync.WaitGroup{}
@@ -39,10 +42,10 @@ func ExfiltratedHostname(domain, server string) (string, Results, error) {
 				}
 			}
 			mutex.Lock()
-			results = append(results, Result{Source: task, IP: ip, Hostname: hostname})
+			t.AddResult(ip, hostname)
 			mutex.Unlock()
 		}(s.Text())
 	})
 	wg.Wait()
-	return task, results, err
+	return t
 }

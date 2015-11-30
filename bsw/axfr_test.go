@@ -5,12 +5,12 @@ import (
 )
 
 func TestAXFR(t *testing.T) {
-	_, results, err := AXFR("zonetransfer.me", "8.8.8.8")
-	if err != nil {
+	tsk := AXFR("zonetransfer.me", "8.8.8.8")
+	if tsk.Err() != nil {
 		t.Error("error returned from AXFR")
-		t.Log(err)
+		t.Log(tsk.Err())
 	}
-	if len(results) < 10 {
+	if len(tsk.Results()) < 10 {
 		t.Error("expected more results from AXFR")
 	}
 }

@@ -12,10 +12,11 @@ func TestWildCard(t *testing.T) {
 }
 
 func TestDictionary(t *testing.T) {
-	_, results, _ := Dictionary("stacktitan.com", "foo", "", "8.8.8.8")
-	if len(results) < 1 {
+	tsk := Dictionary("stacktitan.com", "foo", "", "8.8.8.8")
+	if !tsk.HasResults() {
 		t.Fatal("Dictionary did not return any results")
 	}
+	results := tsk.Results()
 	if results[0].IP != "104.131.56.170" {
 		t.Error("Dictionary returned incorrect or non-existent IP Address")
 	}
@@ -26,10 +27,11 @@ func TestDictionary(t *testing.T) {
 		t.Error("Dictionary returned incorrect source")
 	}
 
-	_, results, _ = Dictionary("stacktitan.com", "autodiscover", "", "8.8.8.8")
-	if len(results) < 1 {
+	tsk = Dictionary("stacktitan.com", "autodiscover", "", "8.8.8.8")
+	if !tsk.HasResults() {
 		t.Fatal("Dictionary did not return any results")
 	}
+	results = tsk.Results()
 	if results[0].IP != "184.106.31.93" {
 		t.Error("Dictionary returned incorrect or non-existent IP Address")
 	}

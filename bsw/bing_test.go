@@ -13,23 +13,23 @@ func TestInvalidKeyToPath(t *testing.T) {
 }
 
 func TestInvalidBingKey(t *testing.T) {
-	_, _, err := BingAPIIP("4.2.2.2", "notavalidkey", "/Data.ashx/Bing/Search/v1/Web")
-	if err == nil {
+	tsk := BingAPIIP("4.2.2.2", "notavalidkey", "/Data.ashx/Bing/Search/v1/Web")
+	if tsk.Err() == nil {
 		t.Error("BingAPI did not return error for bad key and path")
 	}
 }
 
 func TestBingIP(t *testing.T) {
-	tsk, results, err := BingIP("198.41.208.143")
-	if err != nil {
+	tsk := BingIP("198.41.208.143")
+	if err := tsk.Err(); err != nil {
 		t.Error("bing returned an error")
 		t.Log(err)
 	}
-	if tsk != "bing" {
+	if tsk.Task() != "bing ip" {
 		t.Error("task from Bing was not bing")
 	}
 	found := false
-	for _, r := range results {
+	for _, r := range tsk.Results() {
 		if strings.Contains(r.Hostname, "reddit.com") {
 			found = true
 		}

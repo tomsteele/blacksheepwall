@@ -10,20 +10,20 @@ import (
 	"time"
 )
 
-// Headers uses attempts to connect to IP over http(s). If connection is successfull return any hostnames from the possible
-// 'Location' headers.
-func Headers(ip string, timeout int64) (string, Results, error) {
-	task := "Headers"
-	results := []Result{}
+// Headers uses attempts to connect to IP over http(s).
+// If connection is successfull return any hostnames from the possible 'Location' headers.
+func Headers(ip string, timeout int64) *Tsk {
+	t := newTsk("Headers")
 	for _, proto := range []string{"http", "https"} {
 		host, err := hostnameFromHTTPLocationHeader(ip, proto, timeout)
 		if err != nil {
-			return task, results, err
+			t.SetErr(err)
+			return t
 		} else if host != "" {
-			results = append(results, Result{Source: task, IP: ip, Hostname: host})
+			t.AddResult(ip, host)
 		}
 	}
-	return task, results, nil
+	return t
 }
 
 // Performs http(s) request and parses possible 'Location' headers.

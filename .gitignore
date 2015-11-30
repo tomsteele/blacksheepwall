@@ -5,3 +5,4 @@ blacksheepwall
 *.swp
 .DS_Store
 .idea/
+*.yaml

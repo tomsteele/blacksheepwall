@@ -5,23 +5,19 @@ import (
 )
 
 // MX returns the A record for any MX records for a domain.
-func MX(domain, serverAddr string) (string, Results, error) {
-	task := "mx"
-	results := Results{}
+func MX(domain, serverAddr string) *Tsk {
+	t := newTsk("mx")
 	servers, err := LookupMX(domain, serverAddr)
 	if err != nil {
-		return task, results, err
+		t.SetErr(err)
+		return t
 	}
 	for _, s := range servers {
 		ip, err := LookupName(s, serverAddr)
 		if err != nil || ip == "" {
 			continue
 		}
-		results = append(results, Result{
-			Source:   task,
-			IP:       ip,
-			Hostname: strings.TrimRight(s, "."),
-		})
+		t.AddResult(ip, strings.TrimRight(s, "."))
 	}
-	return task, results, nil
+	return t
 }

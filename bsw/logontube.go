@@ -2,6 +2,7 @@ package bsw
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 )
@@ -16,28 +17,26 @@ type logontubeMessage struct {
 }
 
 // LogonTubeAPI sends either a domain or IP to logontube.com's API.
-func LogonTubeAPI(search string) (string, Results, error) {
-	task := "logontube.com API"
-	results := Results{}
-	resp, err := http.Get("http://reverseip.logontube.com/?url=" + search + "&output=json")
+func LogonTubeAPI(search string) *Tsk {
+	t := newTsk("logontube.com API")
+	resp, err := http.Get(fmt.Sprintf("http://reverseip.logontube.com/?url=%s&output=json", search))
 	if err != nil {
-		return task, results, err
+		t.SetErr(err)
+		return t
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return task, results, err
+		t.SetErr(err)
+		return t
 	}
 	m := &logontubeMessage{}
 	if err := json.Unmarshal(body, &m); err != nil {
-		return task, results, err
+		t.SetErr(err)
+		return t
 	}
 	for _, r := range m.Response.Domains {
-		results = append(results, Result{
-			Source:   task,
-			IP:       m.Hostip,
-			Hostname: r,
-		})
+		t.AddResult(m.Hostip, r)
 	}
-	return task, results, nil
+	return t
 }
