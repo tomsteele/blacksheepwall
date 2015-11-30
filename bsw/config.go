@@ -29,7 +29,7 @@ type C struct {
 	Shodan         string `yaml:"shodan"`
 	Censys         string `yaml:"censys"`
 	Yandex         string `yaml:"yandex"`
-	Exfil          string `yaml:"exfiltrated"`
+	Exfil          bool   `yaml:"exfiltrated"`
 	DictFile       string `yaml:"dictionary"`
 	FCRDNS         bool   `yaml:"fcrdns"`
 }

@@ -208,7 +208,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	var config *bsw.C
+	config := &bsw.C{}
 	if *flConfig != "" {
 		var err error
 		config, err = bsw.ReadConfig(*flConfig)
@@ -217,13 +217,84 @@ func main() {
 		}
 	}
 
-	// Modify timeout to Milliseconds for function calls
+	// Modify timeout to Milliseconds for function calls.
+	// Adjust some options for the config file.
+	if config.Timeout != 0 && *flTimeout == 600 {
+		*flTimeout = config.Timeout * 1000
+	}
 	if *flTimeout != 600 {
 		*flTimeout = *flTimeout * 1000
 	}
+	if config.Concurrency != 0 && *flConcurrency == 100 {
+		*flConcurrency = config.Concurrency
+	}
+	if config.Server != "" && *flServerAddr == "8.8.8.8" {
+		*flServerAddr = config.Server
+	}
 
+	// Ingest options from config.
+	if !*flValidate {
+		*flValidate = config.Validate
+	}
+	if !*flipv6 {
+		*flipv6 = config.IPv6
+	}
+	if !*flReverse {
+		*flReverse = config.Reverse
+	}
+	if !*flHeader {
+		*flHeader = config.Headers
+	}
+	if !*flTLS {
+		*flTLS = config.TLS
+	}
+	if !*flAXFR {
+		*flAXFR = config.AXFR
+	}
+	if !*flMX {
+		*flMX = config.MX
+	}
+	if !*flNS {
+		*flNS = config.NS
+	}
+	if !*flViewDNSInfo {
+		*flViewDNSInfo = config.ViewDNSInfo
+	}
+	if *flViewDNSInfoAPI == "" {
+		*flViewDNSInfoAPI = config.ViewDNSInfoAPI
+	}
+	if !*flRobtex {
+		*flRobtex = config.Robtex
+	}
+	if !*flLogonTube {
+		*flLogonTube = config.LogonTube
+	}
+	if !*flSRV {
+		*flSRV = config.SRV
+	}
+	if *flBing == "" {
+		*flBing = config.Bing
+	}
+	if *flShodan == "" {
+		*flShodan = config.Shodan
+	}
+	if *flCensys == "" {
+		*flCensys = config.Censys
+	}
+	if !*flBingHTML {
+		*flBingHTML = config.BingHTML
+	}
 	if *flYandex == "" {
 		*flYandex = config.Yandex
+	}
+	if !*flExfil {
+		*flExfil = config.Exfil
+	}
+	if *flDictFile == "" {
+		*flDictFile = config.DictFile
+	}
+	if !*flFcrdns {
+		*flFcrdns = config.FCRDNS
 	}
 
 	// Holds all IP addresses for testing.
