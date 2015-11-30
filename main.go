@@ -85,9 +85,8 @@ const usage = `
 
   -viewdns <string>     Lookup each host using viewdns.info's API and Reverse IP Lookup function.
 
-  -robtex               Lookup each host using robtex.com
-
-  -logontube            Lookup each host and/or domain using logontube.com's API.
+  -logontube            Lookup each host and/or domain using logontube.com's API. As of this release
+                        the site is down.
 
   -exfiltrated          Lookup hostnames returned from exfiltrated.com's hostname search.
 
@@ -180,7 +179,6 @@ func main() {
 		flNS             = flag.Bool("ns", false, "")
 		flViewDNSInfo    = flag.Bool("viewdns-html", false, "")
 		flViewDNSInfoAPI = flag.String("viewdns", "", "")
-		flRobtex         = flag.Bool("robtex", false, "")
 		flLogonTube      = flag.Bool("logontube", false, "")
 		flSRV            = flag.Bool("srv", false, "")
 		flBing           = flag.String("bing", "", "")
@@ -263,9 +261,6 @@ func main() {
 	}
 	if *flViewDNSInfoAPI == "" {
 		*flViewDNSInfoAPI = config.ViewDNSInfoAPI
-	}
-	if !*flRobtex {
-		*flRobtex = config.Robtex
 	}
 	if !*flLogonTube {
 		*flLogonTube = config.LogonTube
@@ -484,9 +479,6 @@ func main() {
 		}
 		if *flViewDNSInfoAPI != "" {
 			tasks <- func() *bsw.Tsk { return bsw.ViewDNSInfoAPI(host, *flViewDNSInfoAPI) }
-		}
-		if *flRobtex {
-			tasks <- func() *bsw.Tsk { return bsw.Robtex(host) }
 		}
 		if *flLogonTube {
 			tasks <- func() *bsw.Tsk { return bsw.LogonTubeAPI(host) }
