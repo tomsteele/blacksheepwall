@@ -27,19 +27,23 @@ $ sudo cp blacksheepwall /usr/local/bin
 
   -debug                Enable debugging and show errors returned from tasks.
 
+  -config               Location of a YAML file containing any of the options below.
+                        Hypens should be replaced with underscores (e.g. bing-html, bing_html).
+                        Options that do not take an argument are booleans and should be represented
+                        using true/false (e.g. bing_html: true).
+
   -timeout              Maximum timeout in seconds for SOCKET connections.  [default .5 seconds]
 
-  -concurrency <int>    Max amount of concurrent tasks.    [default: 100]
+  -concurrency <int>    Max amount of concurrent tasks.  [default: 100]
 
-  -server <string>      DNS server address.    [default: "8.8.8.8"]
+  -server <string>      DNS server address.  [default: "8.8.8.8"]
 
-  -input <string>       Line separated file of networks (CIDR) or
-                        IP Addresses.
+  -input <string>       Line separated file of networks (CIDR) or IP Addresses.
 
   -ipv6                 Look for additional AAAA records where applicable.
 
-  -domain <string>      Target domain to use for certain tasks, can be a
-                        single domain or a file of line separated domains.
+  -domain <string>      Target domain to use for certain tasks, can be a single
+                        domain or a file of line separated domains.
 
   -fcrdns               Verify results by attempting to retrieve the A or AAAA record for
                         each result previously identified hostname.
@@ -72,20 +76,21 @@ $ sudo cp blacksheepwall /usr/local/bin
                         each ip, and '/shodan/host/search' to lookup ips/hostnames for a domain.
                         A single call is made for all ips.
 
-
   -reverse              Retrieve the PTR for each host.
-
 
   -viewdns-html         Lookup each host using viewdns.info's Reverse IP
                         Lookup function. Use sparingly as they will block you.
 
   -viewdns <string>     Lookup each host using viewdns.info's API and Reverse IP Lookup function.
 
-  -robtex               Lookup each host using robtex.com
-
-  -logontube            Lookup each host and/or domain using logontube.com's API.
+  -logontube            Lookup each host and/or domain using logontube.com's API. As of this release
+                        the site is down.
 
   -exfiltrated          Lookup hostnames returned from exfiltrated.com's hostname search.
+
+  -censys <string>      Searches censys.io for a domain. Names are gathered from TLS certificates for each host
+                        returned from this search. The provided string should be your API ID and Secret separated
+                        by a colon.
 
   -srv                  Find DNS SRV record and retrieve associated hostname/IP info.
 
@@ -102,5 +107,4 @@ $ sudo cp blacksheepwall /usr/local/bin
   -clean                Print results as unique hostnames for each host.
   -csv                  Print results in csv format.
   -json                 Print results as JSON.
-
 ```
