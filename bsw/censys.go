@@ -74,7 +74,10 @@ func CensysDomain(domain, auth string) *Tsk {
 			return t
 		}
 		for _, n := range removeDuplicates(names) {
-			if ok, err := regexp.Match(DomainRegex, []byte(n)); strings.Contains(n, domain) && ok && err != nil {
+			if ok, err := regexp.Match(DomainRegex, []byte(n)); !ok || err != nil {
+				continue
+			}
+			if strings.Contains(n, domain) && n != domain {
 				t.AddResult(ip, n)
 			}
 		}
@@ -92,7 +95,7 @@ func CensysIP(ip, auth string) *Tsk {
 		return t
 	}
 	for _, n := range removeDuplicates(names) {
-		if ok, err := regexp.Match(DomainRegex, []byte(n)); ok && err != nil {
+		if ok, err := regexp.Match(DomainRegex, []byte(n)); ok && err == nil {
 			t.AddResult(ip, n)
 		}
 	}
