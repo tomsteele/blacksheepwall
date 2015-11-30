@@ -29,6 +29,11 @@ const usage = `
 
   -debug                Enable debugging and show errors returned from tasks.
 
+  -config               Location of a YAML file containing any of the options below.
+                        Hypens should be replaced with underscores (e.g. bing-html, bing_html).
+                        Options that do not take an argument are booleans and should be represented
+                        using true/false (e.g. bing_html: true).
+
   -timeout              Maximum timeout in seconds for SOCKET connections.  [default .5 seconds]
 
   -concurrency <int>    Max amount of concurrent tasks.  [default: 100]
@@ -40,7 +45,7 @@ const usage = `
   -ipv6                 Look for additional AAAA records where applicable.
 
   -domain <string>      Target domain to use for certain tasks, can be a single
-	                      domain or a file of line separated domains.
+                        domain or a file of line separated domains.
 
   -fcrdns               Verify results by attempting to retrieve the A or AAAA record for
                         each result previously identified hostname.
@@ -87,7 +92,7 @@ const usage = `
   -exfiltrated          Lookup hostnames returned from exfiltrated.com's hostname search.
 
   -censys <string>      Searches censys.io for a domain or each host. Used to identify names from TLS
-	                      certificates gathered from censys.io.
+                        certificates gathered from censys.io.
 
   -srv                  Find DNS SRV record and retrieve associated hostname/IP info.
 
@@ -161,6 +166,7 @@ func main() {
 		flConcurrency    = flag.Int("concurrency", 100, "")
 		flDebug          = flag.Bool("debug", false, "")
 		flValidate       = flag.Bool("validate", false, "")
+		flConfig         = flag.String("config", "", "")
 		flipv6           = flag.Bool("ipv6", false, "")
 		flServerAddr     = flag.String("server", "8.8.8.8", "")
 		flIPFile         = flag.String("input", "", "")
@@ -202,9 +208,22 @@ func main() {
 		os.Exit(0)
 	}
 
+	var config *bsw.C
+	if *flConfig != "" {
+		var err error
+		config, err = bsw.ReadConfig(*flConfig)
+		if err != nil {
+			log.Fatalf("Error reading config file. Error: %s", err.Error())
+		}
+	}
+
 	// Modify timeout to Milliseconds for function calls
 	if *flTimeout != 600 {
 		*flTimeout = *flTimeout * 1000
+	}
+
+	if *flYandex == "" {
+		*flYandex = config.Yandex
 	}
 
 	// Holds all IP addresses for testing.
