@@ -1,7 +1,6 @@
 package bsw
 
 import (
-	"fmt"
 	"net/url"
 	"strconv"
 
