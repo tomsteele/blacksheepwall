@@ -12,7 +12,7 @@ var DomainRegex = `^\.?[a-z\d]+(?:(?:[a-z\d]*)|(?:[a-z\d\-]*[a-z\d]))(?:\.[a-z\d
 type Tsk struct {
 	task    string
 	results []Result
-	err     error
+	errs    []error
 }
 
 func newTsk(task string) *Tsk {
@@ -44,13 +44,13 @@ func (t *Tsk) HasResults() bool {
 }
 
 // Err returns the value of err.
-func (t *Tsk) Err() error {
-	return t.err
+func (t *Tsk) Err() []error {
+	return t.errs
 }
 
 // SetErr sets the value of err
 func (t *Tsk) SetErr(err error) {
-	t.err = err
+	t.errs = append(t.errs, err)
 }
 
 // Results returns the results.

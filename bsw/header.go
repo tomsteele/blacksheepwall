@@ -18,7 +18,6 @@ func Headers(ip string, timeout int64) *Tsk {
 		host, err := hostnameFromHTTPLocationHeader(ip, proto, timeout)
 		if err != nil {
 			t.SetErr(err)
-			return t
 		} else if host != "" {
 			t.AddResult(ip, host)
 		}
@@ -34,7 +33,12 @@ func hostnameFromHTTPLocationHeader(ip, protocol string, timeout int64) (string,
 	}
 	tr := &http.Transport{
 		Dial: func(network, addr string) (net.Conn, error) {
-			return net.DialTimeout(network, addr, time.Duration(timeout)*time.Millisecond)
+			conn, err := net.DialTimeout(network, addr, time.Duration(timeout)*time.Millisecond)
+			if err != nil {
+				return nil, err
+			}
+			conn.SetDeadline(time.Now().Add(time.Duration(timeout) * time.Millisecond))
+			return conn, nil
 		},
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
