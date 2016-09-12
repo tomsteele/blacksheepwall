@@ -21,9 +21,9 @@ class Module(BaseModule, ResolverMixin, ThreadingMixin):
     }
 
     def module_run(self, domains):
-        params = ['blacksheepwall', '-domain', domains[0], '-config', self.options['config'], '-json']
-        proc = subprocess.Popen(params, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
         for domain in domains:
+            params = ['blacksheepwall', '-domain', domain, '-config', self.options['config'], '-json']
+            proc = subprocess.Popen(params, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
             self.alert('Running blacksheepwall for domain: {}'.format(domain))
             proc.wait()
 	    stdout = proc.stdout.read()
