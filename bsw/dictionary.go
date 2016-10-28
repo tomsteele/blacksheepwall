@@ -42,12 +42,8 @@ func Dictionary(domain, subname, blacklist, serverAddr string) *Tsk {
 	for {
 		cfqdn, err = LookupCname(tfqdn, serverAddr)
 		if err != nil {
-			ecount++
-			if ecount > 10 {
-				t.SetErr(err)
-				return t
-			}
-			continue
+			t.SetErr(err)
+			return t
 		}
 		cfqdns = append(cfqdns, cfqdn)
 		ip, err = LookupName(cfqdn, serverAddr)

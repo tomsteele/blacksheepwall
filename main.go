@@ -432,12 +432,8 @@ func main() {
 					for {
 						cfqdn, err = bsw.LookupCname(tfqdn, *flServerAddr)
 						if err != nil {
-							ecount++
-							if ecount > 10 {
-								isErrored = true
-								break
-							}
-							continue
+							isErrored = true
+							break
 						}
 						cfqdns = append(cfqdns, cfqdn)
 						ip, err = bsw.LookupName(cfqdn, *flServerAddr)
