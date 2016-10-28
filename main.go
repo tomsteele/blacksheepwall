@@ -422,18 +422,46 @@ func main() {
 					ip, err := bsw.LookupName(r.Hostname, *flServerAddr)
 					if err == nil && len(ip) > 0 {
 						resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname}] = true
-					} else {
-						cfqdn, err := bsw.LookupCname(r.Hostname, *flServerAddr)
-						if err == nil && len(cfqdn) > 0 {
-							ip, err = bsw.LookupName(cfqdn, *flServerAddr)
-							if err == nil && len(ip) > 0 {
-								resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname}] = true
-							}
-						}
+						continue
 					}
-					ip, err = bsw.LookupName6(r.Hostname, *flServerAddr)
-					if err == nil && len(ip) > 0 {
+					ecount := 0
+					cfqdn := ""
+					tfqdn := r.Hostname
+					cfqdns := []string{}
+					isErrored := false
+					for {
+						cfqdn, err = bsw.LookupCname(tfqdn, *flServerAddr)
+						if err != nil {
+							ecount++
+							if ecount > 10 {
+								isErrored = true
+								break
+							}
+							continue
+						}
+						cfqdns = append(cfqdns, cfqdn)
+						ip, err = bsw.LookupName(cfqdn, *flServerAddr)
+						if err != nil {
+							ecount++
+							if ecount > 10 {
+								isErrored = true
+								break
+							}
+							tfqdn = cfqdn
+							continue
+						}
+						break
+					}
+					if !isErrored {
 						resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname}] = true
+						for _, c := range cfqdns {
+							resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: c}] = true
+						}
+					} else {
+						ip, err = bsw.LookupName6(r.Hostname, *flServerAddr)
+						if err == nil && len(ip) > 0 {
+							resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname}] = true
+						}
 					}
 				}
 			} else {

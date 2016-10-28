@@ -1,8 +1,6 @@
 package bsw
 
-import (
-	"fmt"
-)
+import "fmt"
 
 const wildcardsub = "youmustcontstuctmoreplyons."
 
@@ -27,31 +25,53 @@ func Dictionary(domain, subname, blacklist, serverAddr string) *Tsk {
 	t := newTsk("Dictionary IPv4")
 	fqdn := subname + "." + domain
 	ip, err := LookupName(fqdn, serverAddr)
-	if err != nil {
-		cfqdn, err := LookupCname(fqdn, serverAddr)
-		if err != nil {
-			t.SetErr(err)
-			return t
-		}
-		ip, err = LookupName(cfqdn, serverAddr)
-		if err != nil {
-			t.SetErr(err)
-			return t
-		}
+	if err == nil {
 		if ip == blacklist {
 			t.SetErr(fmt.Errorf("%v: returned IP in blackslist", ip))
 			return t
 		}
-		t.SetTask("Dictionary-CNAME")
 		t.AddResult(ip, fqdn)
-		t.AddResult(ip, cfqdn)
 		return t
 	}
+
+	ecount := 0
+	cfqdn := ""
+	tfqdn := fqdn
+	cfqdns := []string{}
+
+	for {
+		cfqdn, err = LookupCname(tfqdn, serverAddr)
+		if err != nil {
+			ecount++
+			if ecount > 10 {
+				t.SetErr(err)
+				return t
+			}
+			continue
+		}
+		cfqdns = append(cfqdns, cfqdn)
+		ip, err = LookupName(cfqdn, serverAddr)
+		if err != nil {
+			ecount++
+			if ecount > 10 {
+				t.SetErr(err)
+				return t
+			}
+			tfqdn = cfqdn
+			continue
+		}
+		break
+	}
+
 	if ip == blacklist {
 		t.SetErr(fmt.Errorf("%v: returned IP in blackslist", ip))
 		return t
 	}
+	t.SetTask("Dictionary-CNAME")
 	t.AddResult(ip, fqdn)
+	for _, c := range cfqdns {
+		t.AddResult(ip, c)
+	}
 	return t
 }
 
