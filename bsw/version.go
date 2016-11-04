@@ -1,4 +1,4 @@
 package bsw
 
 // VERSION is the version of blacksheepwall.
-const VERSION = "3.0.3"
+const VERSION = "3.0.4"
