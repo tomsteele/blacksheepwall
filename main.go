@@ -296,8 +296,11 @@ func main() {
 	// Holds all IP addresses for testing.
 	ipAddrList := []string{}
 
+	stat, _ := os.Stdin.Stat()
+	isStdIn := (stat.Mode() & os.ModeCharDevice) == 0
+
 	// Verify that some sort of work load was given in commands.
-	if *flIPFile == "" && *flDomain == "" && len(flag.Args()) < 1 {
+	if !isStdIn && *flIPFile == "" && *flDomain == "" && len(flag.Args()) < 1 {
 		log.Fatal("You didn't provide any work for me to do")
 	}
 	if *flYandex != "" && *flDomain == "" {
@@ -364,6 +367,23 @@ func main() {
 		ipAddrList = append(ipAddrList, list...)
 	}
 
+	// Use a map that acts like a set to store only unique results.
+	resMap := make(map[bsw.Result]bool)
+
+	if isStdIn {
+		stdin, err := ioutil.ReadAll(os.Stdin)
+		if err == nil {
+			pipedResults := bsw.Results{}
+			if err := json.Unmarshal(stdin, &pipedResults); err != nil {
+				log.Fatal("Error parsing JSON from stdin")
+			}
+			for _, r := range pipedResults {
+				ipAddrList = append(ipAddrList, r.IP)
+				resMap[r] = true
+			}
+		}
+	}
+
 	// tracker: Chanel uses an empty struct to track when all goroutines in the pool
 	//          have completed as well as a single call from the gatherer.
 	//
@@ -375,8 +395,6 @@ func main() {
 	tracker := make(chan empty)
 	tasks := make(chan task, *flConcurrency)
 	res := make(chan *bsw.Tsk, *flConcurrency)
-	// Use a map that acts like a set to store only unique results.
-	resMap := make(map[bsw.Result]bool)
 
 	// Start up *flConcurrency amount of goroutines.
 	log.Printf("Spreading tasks across %d goroutines", *flConcurrency)
