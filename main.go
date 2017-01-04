@@ -296,9 +296,11 @@ func main() {
 	// Holds all IP addresses for testing.
 	ipAddrList := []string{}
 
-	stat, _ := os.Stdin.Stat()
-	isStdIn := (stat.Mode() & os.ModeCharDevice) == 0
-
+	stat, err := os.Stdin.Stat()
+	var isStdIn bool
+	if err == nil {
+		isStdIn = (stat.Mode() & os.ModeCharDevice) == 0
+	}
 	// Verify that some sort of work load was given in commands.
 	if !isStdIn && *flIPFile == "" && *flDomain == "" && len(flag.Args()) < 1 {
 		log.Fatal("You didn't provide any work for me to do")
@@ -442,11 +444,13 @@ func main() {
 						resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname}] = true
 						continue
 					}
-					ecount := 0
-					cfqdn := ""
+					var (
+						ecount    int
+						cfqdn     string
+						cfqdns    []string
+						isErrored bool
+					)
 					tfqdn := r.Hostname
-					cfqdns := []string{}
-					isErrored := false
 					for {
 						cfqdn, err = bsw.LookupCname(tfqdn, *flServerAddr)
 						if err != nil {
