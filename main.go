@@ -96,6 +96,9 @@ const usage = `
 
   -srv                  Find DNS SRV record and retrieve associated hostname/IP info.
 
+  -cmn-crawl <string>   Search commoncrawl.org for subdomains of a domain. The provided argument should be the index
+                        to be used. For example: "CC-MAIN-2017-04-index"
+
  Active:
   -axfr                 Attempt a zone transfer on the domain.
 
@@ -180,6 +183,7 @@ func main() {
 		flViewDNSInfo    = flag.Bool("viewdns-html", false, "")
 		flViewDNSInfoAPI = flag.String("viewdns", "", "")
 		flLogonTube      = flag.Bool("logontube", false, "")
+		flCommonCrawl    = flag.String("cmn-crawl", "", "")
 		flSRV            = flag.Bool("srv", false, "")
 		flBing           = flag.String("bing", "", "")
 		flShodan         = flag.String("shodan", "", "")
@@ -271,6 +275,9 @@ func main() {
 	if *flBing == "" {
 		*flBing = config.Bing
 	}
+	if *flCommonCrawl == "" {
+		*flCommonCrawl = config.CommonCrawl
+	}
 	if *flShodan == "" {
 		*flShodan = config.Shodan
 	}
@@ -326,7 +333,10 @@ func main() {
 	if *flAXFR && *flDomain == "" {
 		log.Fatal("Zone transfer requires domain set with -domain")
 	}
-	if *flDomain != "" && *flYandex == "" && *flDictFile == "" && !*flSRV && !*flLogonTube && *flShodan == "" && *flBing == "" && !*flBingHTML && !*flAXFR && !*flNS && !*flMX && !*flExfil && *flCensys == "" {
+	if *flCommonCrawl == "" {
+		log.Fatal("Common Crawl requires domain set with -domain")
+	}
+	if *flDomain != "" && *flYandex == "" && *flDictFile == "" && !*flSRV && !*flLogonTube && *flShodan == "" && *flBing == "" && !*flBingHTML && !*flAXFR && !*flNS && !*flMX && !*flExfil && *flCensys == "" && *flCommonCrawl == "" {
 		log.Fatal("-domain provided but no methods provided that use it")
 	}
 
@@ -597,6 +607,9 @@ func main() {
 		}
 		if *flCensys != "" {
 			tasks <- func() *bsw.Tsk { return bsw.CensysDomain(domain, *flCensys) }
+		}
+		if *flCommonCrawl != "" {
+			tasks <- func() *bsw.Tsk { return bsw.CommonCrawl(domain, *flCommonCrawl, *flServerAddr) }
 		}
 	}
 
