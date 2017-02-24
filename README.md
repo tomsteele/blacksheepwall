@@ -91,6 +91,9 @@ $ go get github.com/tomsteele/blacksheepwall
                         by a colon.
 
   -srv                  Find DNS SRV record and retrieve associated hostname/IP info.
+  
+  -cmn-crawl <string>   Search commoncrawl.org for subdomains of a domain. The provided argument should be the index
+                        to be used. For example: "CC-MAIN-2017-04-index".
 
  Active:
   -axfr                 Attempt a zone transfer on the domain.
