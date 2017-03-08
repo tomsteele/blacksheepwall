@@ -333,7 +333,7 @@ func main() {
 	if *flAXFR && *flDomain == "" {
 		log.Fatal("Zone transfer requires domain set with -domain")
 	}
-	if *flCommonCrawl == "" {
+	if *flCommonCrawl == "" && *flDomain == "" {
 		log.Fatal("Common Crawl requires domain set with -domain")
 	}
 	if *flDomain != "" && *flYandex == "" && *flDictFile == "" && !*flSRV && !*flLogonTube && *flShodan == "" && *flBing == "" && !*flBingHTML && !*flAXFR && !*flNS && !*flMX && !*flExfil && *flCensys == "" && *flCommonCrawl == "" {
