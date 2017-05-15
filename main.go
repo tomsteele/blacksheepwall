@@ -96,6 +96,9 @@ const usage = `
 
   -srv                  Find DNS SRV record and retrieve associated hostname/IP info.
 
+  -cmn-crawl <string>   Search commoncrawl.org for subdomains of a domain. The provided argument should be the index
+                        to be used. For example: "CC-MAIN-2017-04-index"
+
  Active:
   -axfr                 Attempt a zone transfer on the domain.
 
@@ -180,6 +183,7 @@ func main() {
 		flViewDNSInfo    = flag.Bool("viewdns-html", false, "")
 		flViewDNSInfoAPI = flag.String("viewdns", "", "")
 		flLogonTube      = flag.Bool("logontube", false, "")
+		flCommonCrawl    = flag.String("cmn-crawl", "", "")
 		flSRV            = flag.Bool("srv", false, "")
 		flBing           = flag.String("bing", "", "")
 		flShodan         = flag.String("shodan", "", "")
@@ -271,6 +275,9 @@ func main() {
 	if *flBing == "" {
 		*flBing = config.Bing
 	}
+	if *flCommonCrawl == "" {
+		*flCommonCrawl = config.CommonCrawl
+	}
 	if *flShodan == "" {
 		*flShodan = config.Shodan
 	}
@@ -296,8 +303,13 @@ func main() {
 	// Holds all IP addresses for testing.
 	ipAddrList := []string{}
 
+	stat, err := os.Stdin.Stat()
+	var isStdIn bool
+	if err == nil {
+		isStdIn = (stat.Mode() & os.ModeCharDevice) == 0
+	}
 	// Verify that some sort of work load was given in commands.
-	if *flIPFile == "" && *flDomain == "" && len(flag.Args()) < 1 {
+	if !isStdIn && *flIPFile == "" && *flDomain == "" && len(flag.Args()) < 1 {
 		log.Fatal("You didn't provide any work for me to do")
 	}
 	if *flYandex != "" && *flDomain == "" {
@@ -321,7 +333,10 @@ func main() {
 	if *flAXFR && *flDomain == "" {
 		log.Fatal("Zone transfer requires domain set with -domain")
 	}
-	if *flDomain != "" && *flYandex == "" && *flDictFile == "" && !*flSRV && !*flLogonTube && *flShodan == "" && *flBing == "" && !*flBingHTML && !*flAXFR && !*flNS && !*flMX && !*flExfil && *flCensys == "" {
+	if *flCommonCrawl == "" && *flDomain == "" {
+		log.Fatal("Common Crawl requires domain set with -domain")
+	}
+	if *flDomain != "" && *flYandex == "" && *flDictFile == "" && !*flSRV && !*flLogonTube && *flShodan == "" && *flBing == "" && !*flBingHTML && !*flAXFR && !*flNS && !*flMX && !*flExfil && *flCensys == "" && *flCommonCrawl == "" {
 		log.Fatal("-domain provided but no methods provided that use it")
 	}
 
@@ -364,6 +379,23 @@ func main() {
 		ipAddrList = append(ipAddrList, list...)
 	}
 
+	// Use a map that acts like a set to store only unique results.
+	resMap := make(map[bsw.Result]bool)
+
+	if isStdIn {
+		stdin, err := ioutil.ReadAll(os.Stdin)
+		if err == nil {
+			pipedResults := bsw.Results{}
+			if err := json.Unmarshal(stdin, &pipedResults); err != nil {
+				log.Fatal("Error parsing JSON from stdin")
+			}
+			for _, r := range pipedResults {
+				ipAddrList = append(ipAddrList, r.IP)
+				resMap[r] = true
+			}
+		}
+	}
+
 	// tracker: Chanel uses an empty struct to track when all goroutines in the pool
 	//          have completed as well as a single call from the gatherer.
 	//
@@ -375,8 +407,6 @@ func main() {
 	tracker := make(chan empty)
 	tasks := make(chan task, *flConcurrency)
 	res := make(chan *bsw.Tsk, *flConcurrency)
-	// Use a map that acts like a set to store only unique results.
-	resMap := make(map[bsw.Result]bool)
 
 	// Start up *flConcurrency amount of goroutines.
 	log.Printf("Spreading tasks across %d goroutines", *flConcurrency)
@@ -422,18 +452,44 @@ func main() {
 					ip, err := bsw.LookupName(r.Hostname, *flServerAddr)
 					if err == nil && len(ip) > 0 {
 						resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname}] = true
-					} else {
-						cfqdn, err := bsw.LookupCname(r.Hostname, *flServerAddr)
-						if err == nil && len(cfqdn) > 0 {
-							ip, err = bsw.LookupName(cfqdn, *flServerAddr)
-							if err == nil && len(ip) > 0 {
-								resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname}] = true
-							}
-						}
+						continue
 					}
-					ip, err = bsw.LookupName6(r.Hostname, *flServerAddr)
-					if err == nil && len(ip) > 0 {
+					var (
+						ecount    int
+						cfqdn     string
+						cfqdns    []string
+						isErrored bool
+					)
+					tfqdn := r.Hostname
+					for {
+						cfqdn, err = bsw.LookupCname(tfqdn, *flServerAddr)
+						if err != nil {
+							isErrored = true
+							break
+						}
+						cfqdns = append(cfqdns, cfqdn)
+						ip, err = bsw.LookupName(cfqdn, *flServerAddr)
+						if err != nil {
+							ecount++
+							if ecount > 10 {
+								isErrored = true
+								break
+							}
+							tfqdn = cfqdn
+							continue
+						}
+						break
+					}
+					if !isErrored {
 						resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname}] = true
+						for _, c := range cfqdns {
+							resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: c}] = true
+						}
+					} else {
+						ip, err = bsw.LookupName6(r.Hostname, *flServerAddr)
+						if err == nil && len(ip) > 0 {
+							resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname}] = true
+						}
 					}
 				}
 			} else {
@@ -551,6 +607,9 @@ func main() {
 		}
 		if *flCensys != "" {
 			tasks <- func() *bsw.Tsk { return bsw.CensysDomain(domain, *flCensys) }
+		}
+		if *flCommonCrawl != "" {
+			tasks <- func() *bsw.Tsk { return bsw.CommonCrawl(domain, *flCommonCrawl, *flServerAddr) }
 		}
 	}
 

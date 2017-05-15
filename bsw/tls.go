@@ -10,7 +10,7 @@ import (
 // certificate for CommonName and SubjectAlt names.
 func TLS(ip string, timeout int64) *Tsk {
 	t := newTsk("TLS Certificate")
-	tconn, err := net.Dial("tcp", ip+":443")
+	tconn, err := net.DialTimeout("tcp", ip+":443", time.Duration(timeout)*time.Millisecond)
 	if err != nil {
 		t.SetErr(err)
 		return t
