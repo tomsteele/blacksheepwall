@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 )
 
 // LinesToIPList processes a list of IP addresses or networks in CIDR format.
@@ -17,6 +18,35 @@ func LinesToIPList(lines []string) ([]string, error) {
 		} else if ip, network, err := net.ParseCIDR(line); err == nil {
 			for ip := ip.Mask(network.Mask); network.Contains(ip); increaseIP(ip) {
 				ipList = append(ipList, ip.String())
+			}
+		} else if strings.Contains(line, "-") {
+			splitIP := strings.SplitN(line, "-", 2)
+			ip := net.ParseIP(splitIP[0])
+			endIP := net.ParseIP(splitIP[1])
+			if endIP != nil {
+				if !isStartingIPLower(ip, endIP) {
+					return ipList, fmt.Errorf("%s is greater than %s", ip.String(), endIP.String())
+				}
+				ipList = append(ipList, ip.String())
+				for !ip.Equal(endIP) {
+					increaseIP(ip)
+					ipList = append(ipList, ip.String())
+				}
+			} else {
+				ipOct := strings.SplitN(ip.String(), ".", 4)
+				endIP := net.ParseIP(ipOct[0] + "." + ipOct[1] + "." + ipOct[2] + "." + splitIP[1])
+				if endIP != nil {
+					if !isStartingIPLower(ip, endIP) {
+						return ipList, fmt.Errorf("%s is greater than %s", ip.String(), endIP.String())
+					}
+					ipList = append(ipList, ip.String())
+					for !ip.Equal(endIP) {
+						increaseIP(ip)
+						ipList = append(ipList, ip.String())
+					}
+				} else {
+					return ipList, fmt.Errorf("%s is not an IP Address or CIDR Network", line)
+				}
 			}
 		} else {
 			return ipList, fmt.Errorf("%s is not an IP Address or CIDR Network", line)
@@ -33,6 +63,18 @@ func increaseIP(ip net.IP) {
 			break
 		}
 	}
+}
+
+func isStartingIPLower(start, end net.IP) bool {
+	if len(start) != len(end) {
+		return false
+	}
+	for i := range start {
+		if start[i] > end[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // ReadFileLines returns all the lines in a file.
