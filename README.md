@@ -5,16 +5,19 @@ blacksheepwall
 
 blacksheepwall is a hostname reconnaissance tool written in Go. It can also be used as a stand-alone package in your tools.
 
-##Download##
+## Download
+
 Binary packages for every supported operating system are availble [here](https://github.com/tomsteele/blacksheepwall/releases/latest).
 
-##Install##
+## Install
+
 You can download a compiled binary and just run it. Alternatively, if you have Go installed and configured with a workspace, you can run:
 ```
 $ go get github.com/tomsteele/blacksheepwall
 ```
 
-##Usage##
+## Usage
+
 ```
  Usage: blacksheepwall [options] <ip address or CIDR>
 
