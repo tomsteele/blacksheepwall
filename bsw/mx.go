@@ -13,11 +13,13 @@ func MX(domain, serverAddr string) *Tsk {
 		return t
 	}
 	for _, s := range servers {
-		ip, err := LookupName(s, serverAddr)
-		if err != nil || ip == "" {
+		ips, err := LookupName(s, serverAddr)
+		if err != nil || len(ips) == 0 {
 			continue
 		}
-		t.AddResult(ip, strings.TrimRight(s, "."))
+		for _, ip := range ips {
+			t.AddResult(ip, strings.TrimRight(s, "."))
+		}
 	}
 	return t
 }

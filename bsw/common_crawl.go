@@ -51,7 +51,7 @@ func CommonCrawl(domain, path, serverAddr string) *Tsk {
 		wg.Add(1)
 		go func(sub string) {
 			defer wg.Done()
-			xtsk := Dictionary(domain, sub, "", serverAddr)
+			xtsk := Dictionary(domain, sub, nil, serverAddr)
 			if len(xtsk.Err()) > 0 {
 				return
 			}

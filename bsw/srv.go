@@ -24,11 +24,13 @@ func SRV(domain, dnsServer string) *Tsk {
 		if err != nil {
 			continue
 		}
-		ip, err := LookupName(srvTarget, dnsServer)
+		ips, err := LookupName(srvTarget, dnsServer)
 		if err != nil {
 			continue
 		}
-		t.AddResult(ip, srvTarget)
+		for _, ip := range ips {
+			t.AddResult(ip, srvTarget)
+		}
 	}
 	return t
 }
