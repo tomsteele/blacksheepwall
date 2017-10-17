@@ -2,6 +2,7 @@ package bsw
 
 import (
 	"errors"
+	"sort"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -84,22 +85,30 @@ func LookupIP(ip, serverAddr string) ([]string, error) {
 	return names, nil
 }
 
-// LookupName returns IPv4 address from A record or error.
-func LookupName(fqdn, serverAddr string) (string, error) {
+// LookupName returns IPv4 addresses from A records or error.
+func LookupName(fqdn, serverAddr string) ([]string, error) {
+	ips := []string{}
 	m := &dns.Msg{}
 	m.SetQuestion(dns.Fqdn(fqdn), dns.TypeA)
 	in, err := dns.Exchange(m, serverAddr+":53")
 	if err != nil {
-		return "", err
+		return ips, err
 	}
 	if len(in.Answer) < 1 {
-		return "", errors.New("no Answer")
+		return ips, errors.New("no Answer")
 	}
-	if a, ok := in.Answer[0].(*dns.A); ok {
-		ip := a.A.String()
-		return ip, nil
+	for _, answer := range in.Answer {
+		if a, ok := answer.(*dns.A); ok {
+			ip := a.A.String()
+			ips = append(ips, ip)
+		}
 	}
-	return "", errors.New("no A record returned")
+
+	if len(ips) == 0 {
+		err = errors.New("no A record returned")
+	}
+	sort.Sort(sort.StringSlice(ips))
+	return ips, err
 }
 
 // LookupCname returns a fqdn address from CNAME record or error.
@@ -120,22 +129,29 @@ func LookupCname(fqdn, serverAddr string) (string, error) {
 	return "", errors.New("no CNAME record returned")
 }
 
-// LookupName6 returns a IPv6 address from AAAA record or error.
-func LookupName6(fqdn, serverAddr string) (string, error) {
+// LookupName6 returns IPv6 addresses from AAAA records or error.
+func LookupName6(fqdn, serverAddr string) ([]string, error) {
+	ips := []string{}
 	m := &dns.Msg{}
 	m.SetQuestion(dns.Fqdn(fqdn), dns.TypeAAAA)
 	in, err := dns.Exchange(m, serverAddr+":53")
 	if err != nil {
-		return "", err
+		return ips, err
 	}
 	if len(in.Answer) < 1 {
-		return "", errors.New("no Answer")
+		return ips, errors.New("no Answer")
 	}
-	if a, ok := in.Answer[0].(*dns.AAAA); ok {
-		ip := a.AAAA.String()
-		return ip, nil
+	for _, answer := range in.Answer {
+		if a, ok := answer.(*dns.AAAA); ok {
+			ip := a.AAAA.String()
+			ips = append(ips, ip)
+		}
 	}
-	return "", errors.New("no AAAA record returned")
+
+	if len(ips) == 0 {
+		err = errors.New("no A record returned")
+	}
+	return ips, err
 }
 
 // LookupSRV returns a hostname from SRV record or error.

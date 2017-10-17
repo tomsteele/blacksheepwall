@@ -126,18 +126,20 @@ func BingAPIDomain(domain, key, path, server string) *Tsk {
 		if err != nil || u.Host == "" {
 			continue
 		}
-		ip, err := LookupName(u.Host, server)
-		if err != nil || ip == "" {
+		ips, err := LookupName(u.Host, server)
+		if err != nil || len(ips) == 0 {
 			cfqdn, err := LookupCname(u.Host, server)
 			if err != nil || cfqdn == "" {
 				continue
 			}
-			ip, err = LookupName(cfqdn, server)
-			if err != nil || ip == "" {
+			ips, err = LookupName(cfqdn, server)
+			if err != nil || len(ips) == 0 {
 				continue
 			}
 		}
-		t.AddResult(ip, u.Host)
+		for _, ip := range ips {
+			t.AddResult(ip, u.Host)
+		}
 	}
 	return t
 }
@@ -183,19 +185,21 @@ func BingDomain(domain, server string) *Tsk {
 		if err != nil || u.Host == "" {
 			return
 		}
-		ip, err := LookupName(u.Host, server)
-		if err != nil || ip == "" {
+		ips, err := LookupName(u.Host, server)
+		if err != nil || len(ips) == 0 {
 			cfqdn, err := LookupCname(u.Host, server)
 			if err != nil || cfqdn == "" {
 				return
 			}
-			ip, err = LookupName(cfqdn, server)
-			if err != nil || ip == "" {
+			ips, err = LookupName(cfqdn, server)
+			if err != nil || len(ips) == 0 {
 				return
 			}
 
 		}
-		t.AddResult(ip, u.Host)
+		for _, ip := range ips {
+			t.AddResult(ip, u.Host)
+		}
 	})
 	return t
 }

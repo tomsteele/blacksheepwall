@@ -449,9 +449,11 @@ func main() {
 			if *flFcrdns {
 				for _, r := range result {
 					r.Hostname = strings.ToLower(r.Hostname)
-					ip, err := bsw.LookupName(r.Hostname, *flServerAddr)
-					if err == nil && len(ip) > 0 {
-						resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname}] = true
+					ips, err := bsw.LookupName(r.Hostname, *flServerAddr)
+					if err == nil {
+						for _, ip := range ips {
+							resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname}] = true
+						}
 						continue
 					}
 					var (
@@ -468,7 +470,7 @@ func main() {
 							break
 						}
 						cfqdns = append(cfqdns, cfqdn)
-						ip, err = bsw.LookupName(cfqdn, *flServerAddr)
+						ips, err = bsw.LookupName(cfqdn, *flServerAddr)
 						if err != nil {
 							ecount++
 							if ecount > 10 {
@@ -481,14 +483,18 @@ func main() {
 						break
 					}
 					if !isErrored {
-						resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname}] = true
-						for _, c := range cfqdns {
-							resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: c}] = true
+						for _, ip := range ips {
+							resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname}] = true
+							for _, c := range cfqdns {
+								resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: c}] = true
+							}
 						}
 					} else {
-						ip, err = bsw.LookupName6(r.Hostname, *flServerAddr)
-						if err == nil && len(ip) > 0 {
-							resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname}] = true
+						ips, err = bsw.LookupName6(r.Hostname, *flServerAddr)
+						if err == nil {
+							for _, ip := range ips {
+								resMap[bsw.Result{Source: "fcrdns", IP: ip, Hostname: r.Hostname}] = true
+							}
 						}
 					}
 				}
@@ -561,10 +567,28 @@ func main() {
 				log.Fatal("Error reading " + *flDictFile + " " + err.Error())
 			}
 			// Get an IP for a possible wildcard domain and use it as a blacklist.
-			blacklist := bsw.GetWildCard(domain, *flServerAddr)
-			var blacklist6 string
+			blacklist := bsw.GetWildCards(domain, *flServerAddr)
+			for _, wildcardIp := range blacklist {
+				ip := wildcardIp
+				tasks <- func() *bsw.Tsk {
+					t := &bsw.Tsk{}
+					t.SetTask("Wildcard IPv4")
+					t.AddResult(ip, "*." + domain)
+					return t
+				}
+			}
+			var blacklist6 []string
 			if *flipv6 {
-				blacklist6 = bsw.GetWildCard6(domain, *flServerAddr)
+				blacklist6 = bsw.GetWildCards6(domain, *flServerAddr)
+				for _, wildcardIp := range blacklist6 {
+					ip := wildcardIp
+					tasks <- func() *bsw.Tsk {
+						t := &bsw.Tsk{}
+						t.SetTask("Wildcard IPv6")
+						t.AddResult(ip, "*." + domain)
+						return t
+					}
+				}
 			}
 			for _, n := range nameList {
 				sub := n

@@ -44,18 +44,20 @@ func YandexAPI(domain, apiURL, serverAddr string) *Tsk {
 		if domainSet[domain] {
 			return
 		}
-		ip, err := LookupName(domain, serverAddr)
-		if err != nil || ip == "" {
+		ips, err := LookupName(domain, serverAddr)
+		if err != nil || len(ips) == 0 {
 			cfqdn, err := LookupCname(domain, serverAddr)
 			if err != nil || cfqdn == "" {
 				return
 			}
-			ip, err = LookupName(cfqdn, serverAddr)
-			if err != nil || ip == "" {
+			ips, err = LookupName(cfqdn, serverAddr)
+			if err != nil || len(ips) == 0 {
 				return
 			}
 		}
-		t.AddResult(ip, domain)
+		for _, ip := range ips {
+			t.AddResult(ip, domain)
+		}
 	})
 	return t
 }

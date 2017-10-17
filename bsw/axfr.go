@@ -39,24 +39,24 @@ func AXFR(domain, serverAddr string) *Tsk {
 					hostname = v.Ptr
 				case *dns.NS:
 					cip, err := LookupName(v.Ns, serverAddr)
-					if err != nil || cip == "" {
+					if err != nil || len(cip) == 0 {
 						continue
 					}
-					ip = cip
+					ip = cip[0]
 					hostname = v.Ns
 				case *dns.CNAME:
 					cip, err := LookupName(v.Target, serverAddr)
-					if err != nil || cip == "" {
+					if err != nil || len(cip) == 0 {
 						continue
 					}
 					hostname = v.Hdr.Name
-					ip = cip
+					ip = cip[0]
 				case *dns.SRV:
 					cip, err := LookupName(v.Target, serverAddr)
-					if err != nil || ip == "" {
+					if err != nil || len(cip) == 0 {
 						continue
 					}
-					ip = cip
+					ip = cip[0]
 					hostname = v.Target
 				default:
 					continue

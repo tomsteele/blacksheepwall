@@ -30,19 +30,21 @@ func ExfiltratedHostname(domain, server string) *Tsk {
 		wg.Add(1)
 		go func(hostname string) {
 			defer wg.Done()
-			ip, err := LookupName(hostname, server)
-			if err != nil || ip == "" {
+			ips, err := LookupName(hostname, server)
+			if err != nil || len(ips) == 0 {
 				cfqdn, err := LookupCname(hostname, server)
 				if err != nil || cfqdn == "" {
 					return
 				}
-				ip, err = LookupName(cfqdn, server)
-				if err != nil || ip == "" {
+				ips, err = LookupName(cfqdn, server)
+				if err != nil || len(ips) == 0 {
 					return
 				}
 			}
 			mutex.Lock()
-			t.AddResult(ip, hostname)
+			for _, ip := range ips {
+				t.AddResult(ip, hostname)
+			}
 			mutex.Unlock()
 		}(s.Text())
 	})
