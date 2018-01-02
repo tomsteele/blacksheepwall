@@ -94,7 +94,9 @@ const usage = `
                         returned from this search. The provided string should be your API ID and Secret separated
 						by a colon.
 
-  -crtsh                Searches crt.sh for certificates related to the provided domain.       
+  -crtsh                Searches crt.sh for certificates related to the provided domain.
+  
+  -vt                   Searches VirusTotal for subdomains for the provided domain.
 
   -srv                  Find DNS SRV record and retrieve associated hostname/IP info.
 
@@ -188,6 +190,7 @@ func main() {
 		flCommonCrawl    = flag.String("cmn-crawl", "", "")
 		flSRV            = flag.Bool("srv", false, "")
 		flCRTSH          = flag.Bool("crtsh", false, "")
+		flVT             = flag.Bool("vt", false, "")
 		flBing           = flag.String("bing", "", "")
 		flShodan         = flag.String("shodan", "", "")
 		flCensys         = flag.String("censys", "", "")
@@ -266,6 +269,9 @@ func main() {
 	if !*flCRTSH {
 		*flCRTSH = config.CRTSH
 	}
+	if !*flVT {
+		*flVT = config.VT
+	}
 	if !*flViewDNSInfo {
 		*flViewDNSInfo = config.ViewDNSInfo
 	}
@@ -339,13 +345,16 @@ func main() {
 	if *flCRTSH && *flDomain == "" {
 		log.Fatal("CRTSH requires a domain set with -domain")
 	}
+	if *flVT && *flDomain == "" {
+		log.Fatal("VirusTotal requires a domain set with -domain")
+	}
 	if *flAXFR && *flDomain == "" {
 		log.Fatal("Zone transfer requires domain set with -domain")
 	}
 	if *flCommonCrawl != "" && *flDomain == "" {
 		log.Fatal("Common Crawl requires domain set with -domain")
 	}
-	if *flDomain != "" && *flYandex == "" && *flDictFile == "" && !*flSRV && !*flLogonTube && *flShodan == "" && *flBing == "" && !*flBingHTML && !*flAXFR && !*flNS && !*flMX && !*flCRTSH && !*flExfil && *flCensys == "" && *flCommonCrawl == "" {
+	if *flDomain != "" && *flYandex == "" && *flDictFile == "" && !*flSRV && !*flLogonTube && *flShodan == "" && *flBing == "" && !*flBingHTML && !*flAXFR && !*flNS && !*flMX && !*flVT && !*flCRTSH && !*flExfil && *flCensys == "" && *flCommonCrawl == "" {
 		log.Fatal("-domain provided but no methods provided that use it")
 	}
 
@@ -646,6 +655,9 @@ func main() {
 		}
 		if *flCRTSH {
 			tasks <- func() *bsw.Tsk { return bsw.CRTSHCT(domain, *flServerAddr) }
+		}
+		if *flVT {
+			tasks <- func() *bsw.Tsk { return bsw.VirusTotal(domain, *flServerAddr) }
 		}
 	}
 

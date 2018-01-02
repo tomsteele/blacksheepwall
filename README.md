@@ -93,7 +93,9 @@ $ go get github.com/tomsteele/blacksheepwall
                         returned from this search. The provided string should be your API ID and Secret separated
 						by a colon.
 
-  -crtsh                Searches crt.sh for certificates related to the provided domain.       
+  -crtsh                Searches crt.sh for certificates related to the provided domain.
+  
+  -vt                   Searches VirusTotal for subdomains for the provided domain.
 
   -srv                  Find DNS SRV record and retrieve associated hostname/IP info.
 

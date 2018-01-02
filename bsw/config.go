@@ -34,6 +34,7 @@ type C struct {
 	FCRDNS         bool   `yaml:"fcrdns"`
 	CommonCrawl    string `yaml:"cmn_crawl"`
 	CRTSH          bool   `yaml:"crtsh"`
+	VT             bool   `yaml:"vt"`
 }
 
 // ReadConfig parses a yaml file and returns a pointer to a new config.
