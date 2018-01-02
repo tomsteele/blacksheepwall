@@ -92,7 +92,9 @@ const usage = `
 
   -censys <string>      Searches censys.io for a domain. Names are gathered from TLS certificates for each host
                         returned from this search. The provided string should be your API ID and Secret separated
-                        by a colon.
+						by a colon.
+
+  -crtsh                Searches crt.sh for certificates related to the provided domain.       
 
   -srv                  Find DNS SRV record and retrieve associated hostname/IP info.
 
@@ -185,6 +187,7 @@ func main() {
 		flLogonTube      = flag.Bool("logontube", false, "")
 		flCommonCrawl    = flag.String("cmn-crawl", "", "")
 		flSRV            = flag.Bool("srv", false, "")
+		flCRTSH          = flag.Bool("crtsh", false, "")
 		flBing           = flag.String("bing", "", "")
 		flShodan         = flag.String("shodan", "", "")
 		flCensys         = flag.String("censys", "", "")
@@ -260,6 +263,9 @@ func main() {
 	if !*flNS {
 		*flNS = config.NS
 	}
+	if !*flCRTSH {
+		*flCRTSH = config.CRTSH
+	}
 	if !*flViewDNSInfo {
 		*flViewDNSInfo = config.ViewDNSInfo
 	}
@@ -330,13 +336,16 @@ func main() {
 	if *flMX && *flDomain == "" {
 		log.Fatal("MX lookup requires domain set with -domain")
 	}
+	if *flCRTSH && *flDomain == "" {
+		log.Fatal("CRTSH requires a domain set with -domain")
+	}
 	if *flAXFR && *flDomain == "" {
 		log.Fatal("Zone transfer requires domain set with -domain")
 	}
 	if *flCommonCrawl != "" && *flDomain == "" {
 		log.Fatal("Common Crawl requires domain set with -domain")
 	}
-	if *flDomain != "" && *flYandex == "" && *flDictFile == "" && !*flSRV && !*flLogonTube && *flShodan == "" && *flBing == "" && !*flBingHTML && !*flAXFR && !*flNS && !*flMX && !*flExfil && *flCensys == "" && *flCommonCrawl == "" {
+	if *flDomain != "" && *flYandex == "" && *flDictFile == "" && !*flSRV && !*flLogonTube && *flShodan == "" && *flBing == "" && !*flBingHTML && !*flAXFR && !*flNS && !*flMX && !*flCRTSH && !*flExfil && *flCensys == "" && *flCommonCrawl == "" {
 		log.Fatal("-domain provided but no methods provided that use it")
 	}
 
@@ -573,7 +582,7 @@ func main() {
 				tasks <- func() *bsw.Tsk {
 					t := &bsw.Tsk{}
 					t.SetTask("Wildcard IPv4")
-					t.AddResult(ip, "*." + domain)
+					t.AddResult(ip, "*."+domain)
 					return t
 				}
 			}
@@ -585,7 +594,7 @@ func main() {
 					tasks <- func() *bsw.Tsk {
 						t := &bsw.Tsk{}
 						t.SetTask("Wildcard IPv6")
-						t.AddResult(ip, "*." + domain)
+						t.AddResult(ip, "*."+domain)
 						return t
 					}
 				}
@@ -634,6 +643,9 @@ func main() {
 		}
 		if *flCommonCrawl != "" {
 			tasks <- func() *bsw.Tsk { return bsw.CommonCrawl(domain, *flCommonCrawl, *flServerAddr) }
+		}
+		if *flCRTSH {
+			tasks <- func() *bsw.Tsk { return bsw.CRTSHCT(domain, *flServerAddr) }
 		}
 	}
 
