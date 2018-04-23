@@ -7,7 +7,7 @@ blacksheepwall is a hostname reconnaissance tool written in Go. It can also be u
 
 ## Download
 
-Binary packages for every supported operating system are availble [here](https://github.com/tomsteele/blacksheepwall/releases/latest).
+Binary packages for every supported operating system are available [here](https://github.com/tomsteele/blacksheepwall/releases/latest).
 
 ## Install
 
