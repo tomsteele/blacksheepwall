@@ -26,7 +26,7 @@ const crtshURL = "https://crt.sh"
 // certificates
 func CRTSHCT(domain, serverAddr string) *Tsk {
 	t := newTsk("CRT.SH CT")
-	resp, err := http.Get(fmt.Sprintf("%s/?q=%s", crtshURL, domain))
+	resp, err := http.Get(fmt.Sprintf("%s/?q=%%.%s", crtshURL, domain))
 	if err != nil {
 		t.SetErr(err)
 		return t
