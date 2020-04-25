@@ -1,6 +1,9 @@
 blacksheepwall
 ===
 
+## Archive Notice
+I am no longer maintaing this tool. BSW has served me well, and was written in Go in 2013. I would suggest using [amass](https://github.com/OWASP/Amass) as it is actively supported.
+
 [![](https://godoc.org/github.com/tomsteele/blacksheepwall/bsw?status.svg)](http://godoc.org/github.com/tomsteele/blacksheepwall/bsw)
 
 blacksheepwall is a hostname reconnaissance tool written in Go. It can also be used as a stand-alone package in your tools.
